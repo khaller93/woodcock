@@ -67,8 +67,21 @@ class GraphQueryEngine(Protocol[_R, _E]):
     def edges(self, subj_node: _R | None,
               edge_type: _E | None,
               obj_node: _R | None) -> Iterable[_T]:
-        """
+        """Gets all the edges that match the given filter.
 
+        Args:
+            subj_node: ID of the node on the subject position or `None`, if no
+            filter shall be applied on the subject.
+            edge_type: ID of the edge type or `None`, if no filter shall be
+            applied on the edge type.
+            obj_node: ID of the node on the object position or `None`, if no
+            filter shall be applied on the object.
+        Returns:
+            An iterable sequence of all matching edges. This method must not
+            return `None` as a result, but an empty sequence, if no matching
+            edges could be found.
+        Raises:
+            IOError: An error occurred accessing the query engine.
         """
         raise NotImplementedError()
 

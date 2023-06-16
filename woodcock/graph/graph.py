@@ -2,9 +2,18 @@ from typing import TypeVar, Hashable, Tuple, Iterable, Protocol
 
 ID = Hashable
 
+# type for internal node IDs
 _R = TypeVar('_R', bound=ID)
+# type for original node IDs
+_RS = TypeVar('_RS', bound=ID)
+# type for internal edge type IDs
 _E = TypeVar('_E', bound=ID)
+# type for original edge type IDs
+_ES = TypeVar('_ES', bound=ID)
+# triple with internal IDs
 _T = Tuple[_R, _E, _R]
+# triple with original IDs
+_TS = Tuple[_RS, _ES, _RS]
 
 
 class GraphQueryEngine(Protocol[_R, _E]):
@@ -116,7 +125,38 @@ class GraphQueryEngine(Protocol[_R, _E]):
         raise NotImplementedError()
 
 
-class Graph(Protocol[_R, _E]):
+class GraphIndex(Protocol[_RS, _R, _ES, _E]):
+    """A serializable index for a graph.
+
+
+    """
+
+    def node_id_for(self, node_label: _RS) -> _R:
+        """Gets the internal node ID for the node with the given original label.
+
+        Returns:
+            The internal node ID for the node with the given original label.
+        Raises:
+            IOError: An error occurred accessing the query engine.
+            ValueError: The given node label is unknown.
+        """
+        return next(iter(self.node_ids_for([node_label])))
+
+    def node_ids_for(self, node_labels: Iterable[_RS]) -> Iterable[_R]:
+        """Gets iterable sequence of internal node IDs for given original node
+        labels.
+
+        Returns:
+            An iterable sequence of internal node IDs for the iterable sequence
+            of original node labels.
+        Raises:
+            IOError: An error occurred accessing the query engine.
+            ValueError: One of the given node labels is unknown.
+        """
+        raise NotImplementedError()
+
+
+class Graph(Protocol[_RS, _R, _ES, _E]):
     """A simple knowledge graph.
 
     A simple knowledge graph consists of nodes and directed edges between those
@@ -128,7 +168,18 @@ class Graph(Protocol[_R, _E]):
     triples (i.e. <subj node id> <edge id> <obj node id>).
     """
 
-    def query_engine(self) -> GraphQueryEngine:
+    def index(self) -> GraphIndex[_RS, _R, _ES, _E]:
+        """Gets a serializable index for this graph, which allows to get the
+        internal ID for nodes as well as edge types given the original label.
+
+        Returns:
+            A serializable index for this graph.
+        Raises:
+            IOError: An error occurred creating the query engine.
+        """
+        raise NotImplementedError()
+
+    def query_engine(self) -> GraphQueryEngine[_R, _E]:
         """Gets a query engine for this graph.
 
         Returns:
@@ -139,22 +190,5 @@ class Graph(Protocol[_R, _E]):
         raise NotImplementedError()
 
 
-class EdgeImporter:
-    """"""
-
-
-class EmbeddedGraph(Graph):
+class EmbeddedGraph(Graph[_RS, _R, _ES, _E]):
     """A simple knowledge graph that is embedded into this application."""
-
-    def import_edges(self, edges: Iterable[Edge]) -> None:
-        """"""
-        with self._importer as importer:
-            for edge in edges:
-                pass
-
-    @property
-    def _importer(self) -> EdgeImporter:
-        """
-
-        """
-        raise NotImplementedError()

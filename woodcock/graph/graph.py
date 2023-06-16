@@ -85,6 +85,36 @@ class GraphQueryEngine(Protocol[_R, _E]):
         """
         raise NotImplementedError()
 
+    def node_count(self) -> int:
+        """Gets the number of distinct nodes in the graph.
+
+        Returns:
+            The number of distinct nodes in the graph.
+        Raises:
+            IOError: An error occurred accessing the query engine.
+        """
+        raise NotImplementedError()
+
+    def edge_type_count(self) -> int:
+        """Gets the number of distinct edge types in the graph.
+
+        Returns:
+            The number of distinct edge types in the graph.
+        Raises:
+            IOError: An error occurred accessing the query engine.
+        """
+        raise NotImplementedError()
+
+    def edge_count(self) -> int:
+        """Gets the total number of edges in the graph.
+
+        Returns:
+            The number of total edges in the graph.
+        Raises:
+            IOError: An error occurred accessing the query engine.
+        """
+        raise NotImplementedError()
+
 
 class EdgeImporter:
     """"""

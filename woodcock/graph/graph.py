@@ -1,18 +1,16 @@
-from abc import ABC, abstractmethod
-from typing import TypeVar, Hashable, Tuple, Iterable
+from typing import TypeVar, Hashable, Tuple, Iterable, Protocol
 
 ID = Hashable
-Edge = Tuple[ID, ID, ID]
 
-_ID_T = TypeVar('_ID_T', bound=ID)
-_Edge_T = Tuple[_ID_T, _ID_T, _ID_T]
+_R = TypeVar('_R', bound=ID)
+_E = TypeVar('_E', bound=ID)
+_T = Tuple[_R, _E, _R]
 
 
-class GraphQueryEngine(ABC):
+class GraphQueryEngine(Protocol[_R, _E]):
     """A serializable query engine over the complete graph."""
 
-    @abstractmethod
-    def node_ids(self) -> Iterable[ID]:
+    def node_ids(self) -> Iterable[_R]:
         """Gets all nodes in the graph without duplicates.
 
         Returns:
@@ -23,36 +21,63 @@ class GraphQueryEngine(ABC):
         """
         raise NotImplementedError()
 
-    @abstractmethod
-    def edge_ids(self) -> Iterable[ID]:
-        """Gets all edge IDs in the graph without duplicates.
+    def edge_type_ids(self) -> Iterable[_E]:
+        """Gets all edge type IDs in the graph without duplicates.
 
         Returns:
-
+            An iterable sequence of all edge types in the graph, whereas no
+            duplicates are returned.
         Raises:
             IOError: An error occurred accessing the query engine.
         """
         raise NotImplementedError()
 
-    @abstractmethod
-    def out(self, subj_node: _ID_T) -> Iterable[_Edge_T]:
+    def e_in(self, subj_node: _R) -> Iterable[_T]:
+        """Gets all ingoing edges for the given subject node.
+
+        Args:
+            subj_node: ID of the node for which the ingoing edges shall be
+            returned.
+        Returns:
+            An iterable sequence of all ingoing edges. The subject node will be
+            on the object position of these edges. For the node with the ID
+            `ex:bob`, this would for example be:
+            `[('ex:alice', 'foaf:knows', 'ex:bob')]`
+        Raises:
+            IOError: An error occurred accessing the query engine.
+        """
+        raise NotImplementedError()
+
+    def e_out(self, subj_node: _R) -> Iterable[_T]:
         """Gets all outgoing edges for the given subject node.
 
         Args:
-            subj_node:
+            subj_node: ID of the node for which the outgoing edges shall be
+            returned.
         Returns:
-
+            An iterable sequence of all outgoing edges. The subject node will be
+            on the subject position of these edges. For the node with the ID
+            `ex:bob`, this would for example be:
+            `[('ex:bob', 'foaf:knows', 'ex:ash')]`
         Raises:
             IOError: An error occurred accessing the query engine.
         """
         raise NotImplementedError()
 
+    def edges(self, subj_node: _R | None,
+              edge_type: _E | None,
+              obj_node: _R | None) -> Iterable[_T]:
+        """
 
-class EdgeImporter(ABC):
+        """
+        raise NotImplementedError()
+
+
+class EdgeImporter:
     """"""
 
 
-class Graph(ABC):
+class Graph:
     """A simple knowledge graph.
 
     A simple knowledge graph consists of nodes and directed edges between those
@@ -64,7 +89,6 @@ class Graph(ABC):
     triples (i.e. <subj node id> <edge id> <obj node id>).
     """
 
-    @abstractmethod
     def query_engine(self) -> GraphQueryEngine:
         """Gets a query engine for this graph.
 
@@ -86,7 +110,6 @@ class EmbeddedGraph(Graph):
                 pass
 
     @property
-    @abstractmethod
     def _importer(self) -> EdgeImporter:
         """
 

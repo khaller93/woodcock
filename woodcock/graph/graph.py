@@ -116,11 +116,7 @@ class GraphQueryEngine(Protocol[_R, _E]):
         raise NotImplementedError()
 
 
-class EdgeImporter:
-    """"""
-
-
-class Graph:
+class Graph(Protocol[_R, _E]):
     """A simple knowledge graph.
 
     A simple knowledge graph consists of nodes and directed edges between those
@@ -136,11 +132,15 @@ class Graph:
         """Gets a query engine for this graph.
 
         Returns:
-
+            A serializable query engine for this graph.
         Raises:
             IOError: An error occurred creating the query engine.
         """
         raise NotImplementedError()
+
+
+class EdgeImporter:
+    """"""
 
 
 class EmbeddedGraph(Graph):

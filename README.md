@@ -13,4 +13,4 @@ if you have enough time on your hand.
 As enthusiast-level commodity hardware, we consider:
 * AMD Ryzen™ 9 5900 or Intel Core i9-10900K
 * 64GB of RAM
-* 1 TB free space on HDD or SDD
+* 1 TB free space on HDD or SSD

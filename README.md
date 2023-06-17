@@ -1,6 +1,6 @@
 # Woodcock RDF2Vec
 
-**Train RDF2Vec on large Knowledge Graphs**
+**Train RDF2Vec on large Knowledge Graphs!**
 
 ![Woodcock dancing](docs/graphics/woodcock.gif)
 

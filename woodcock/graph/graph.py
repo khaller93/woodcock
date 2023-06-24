@@ -1,9 +1,6 @@
-from typing import TypeVar, Hashable, Tuple, Iterable, Protocol, Union
+from typing import TypeVar, Tuple, Iterable, Generic, Union
+from woodcock.graph.typing import ID
 
-ID = Hashable
-Triple = Tuple[ID, ID, ID]
-
-# type for internal node IDs
 _R = TypeVar('_R', bound=ID)
 # type for original node IDs
 _RS = TypeVar('_RS', bound=ID)
@@ -17,7 +14,7 @@ _T = Tuple[_R, _E, _R]
 _TS = Tuple[_RS, _ES, _RS]
 
 
-class GraphQueryEngine(Protocol[_R, _E]):
+class GraphQueryEngine(Generic[_R, _E]):
     """A serializable query engine over the complete graph."""
 
     def open(self) -> None:
@@ -132,7 +129,7 @@ class GraphQueryEngine(Protocol[_R, _E]):
         pass
 
 
-class GraphIndex(Protocol[_RS, _R, _ES, _E]):
+class GraphIndex(Generic[_RS, _R, _ES, _E]):
     """A serializable index for a graph."""
 
     def open(self) -> None:
@@ -166,7 +163,7 @@ class GraphIndex(Protocol[_RS, _R, _ES, _E]):
         pass
 
 
-class Graph(Protocol[_RS, _R, _ES, _E]):
+class Graph(Generic[_RS, _R, _ES, _E]):
     """A simple knowledge graph.
 
     A simple knowledge graph consists of nodes and directed edges between those
@@ -200,7 +197,7 @@ class Graph(Protocol[_RS, _R, _ES, _E]):
         raise NotImplementedError()
 
 
-class EmbeddedGraph(Graph[_RS, _R, _ES, _E]):
+class EmbeddedGraph(Generic[_RS, _R, _ES, _E]):
     """A simple knowledge graph that is embedded into this application."""
 
     def import_data(self, data: Iterable[_TS]) -> None:

@@ -156,8 +156,7 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
             self._con.close()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if not exc_type:
-            self.close()
+        self.close()
 
 
 class _DuckDBGraphIndex(GraphIndex[str, int, str, int]):
@@ -189,8 +188,7 @@ class _DuckDBGraphIndex(GraphIndex[str, int, str, int]):
             self._con.close()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if not exc_type:
-            self.close()
+        self.close()
 
 
 class DuckDBGraph(EmbeddedGraph[str, int, str, int]):

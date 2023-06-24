@@ -1,6 +1,7 @@
-from typing import TypeVar, Hashable, Tuple, Iterable, Protocol
+from typing import TypeVar, Hashable, Tuple, Iterable, Protocol, Union
 
 ID = Hashable
+Triple = Tuple[ID, ID, ID]
 
 # type for internal node IDs
 _R = TypeVar('_R', bound=ID)
@@ -18,6 +19,9 @@ _TS = Tuple[_RS, _ES, _RS]
 
 class GraphQueryEngine(Protocol[_R, _E]):
     """A serializable query engine over the complete graph."""
+
+    def open(self) -> None:
+        pass
 
     def node_ids(self) -> Iterable[_R]:
         """Gets all nodes in the graph without duplicates.
@@ -73,9 +77,9 @@ class GraphQueryEngine(Protocol[_R, _E]):
         """
         raise NotImplementedError()
 
-    def edges(self, subj_node: _R | None,
-              edge_type: _E | None,
-              obj_node: _R | None) -> Iterable[_T]:
+    def edges(self, subj_node: Union[_R, None],
+              edge_type: Union[_E, None],
+              obj_node: Union[_R, None]) -> Iterable[_T]:
         """Gets all the edges that match the given filter.
 
         Args:
@@ -124,12 +128,15 @@ class GraphQueryEngine(Protocol[_R, _E]):
         """
         raise NotImplementedError()
 
+    def close(self) -> None:
+        pass
+
 
 class GraphIndex(Protocol[_RS, _R, _ES, _E]):
-    """A serializable index for a graph.
+    """A serializable index for a graph."""
 
-
-    """
+    def open(self) -> None:
+        pass
 
     def node_id_for(self, node_label: _RS) -> _R:
         """Gets the internal node ID for the node with the given original label.
@@ -154,6 +161,9 @@ class GraphIndex(Protocol[_RS, _R, _ES, _E]):
             ValueError: One of the given node labels is unknown.
         """
         raise NotImplementedError()
+
+    def close(self) -> None:
+        pass
 
 
 class Graph(Protocol[_RS, _R, _ES, _E]):
@@ -192,3 +202,6 @@ class Graph(Protocol[_RS, _R, _ES, _E]):
 
 class EmbeddedGraph(Graph[_RS, _R, _ES, _E]):
     """A simple knowledge graph that is embedded into this application."""
+
+    def import_data(self, data: Iterable[_TS]) -> None:
+        pass

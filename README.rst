@@ -30,6 +30,7 @@ How to Provide Feedback:
 1. **Issues:** If you encounter any issues or bugs, please open a new issue on
 our `GitHub Issues <https://github.com/khaller93/woodcock/issues>`_ page.
 Describe the problem in detail so we can address it effectively.
+
 2. **Suggestions:** If you have ideas for new features or improvements, feel
 free to open a feature request issue. Clearly label it as an ``enhancement`` and
 detail your idea so we can discuss it.
@@ -39,10 +40,13 @@ Contributing:
 
 1. **Fork and Clone:** Start by forking the project and then cloning your fork
 to make modifications.
+
 2. **Branch:** Create a new branch for every feature or fix, this helps in
 organizing and reviewing changes.
+
 3. **Pull Request:** After making your changes, commit them and push them to
 your fork. Then, open a pull request against our ``main`` branch.
+
 4. **Stay Updated:** Make sure your fork is always up-to-date with our ``main``
 branch to avoid merge conflicts.
 

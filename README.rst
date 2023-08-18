@@ -2,9 +2,9 @@ Woodcock Corpora Generation
 ===========================
 
 .. image:: docs/graphics/woodcock.png
-    :width: 400
+    :width: 800
     :align: center
-    :alt: American Woodcock pixel art (DALL-E)
+    :alt: American Woodcock in a labyrinth pixel art (DALL-E)
 
 **Objective:** Enable the generation of corpora for embedding techniques like
 RDF2Vec from large knowledge graphs (e.g. Wikidata or DBpedia) using

@@ -1,4 +1,4 @@
-Woodcock Corpora Generation
+Woodcock KG Corpora Generation
 ===========================
 
 .. image:: docs/graphics/woodcock.png

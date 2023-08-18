@@ -3,7 +3,7 @@ name = "woodcock"
 version = "0.1.0"
 description = "A scalable implementation of RDF2Vec"
 authors = ["Kevin Haller <contact@kevinhaller.dev>"]
-readme = "README.md"
+readme = "README.rst"
 
 [tool.poetry.dependencies]
 python = "^3.10"

@@ -28,7 +28,7 @@ How to Provide Feedback:
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. **Issues:** If you encounter any issues or bugs, please open a new issue on
-our `Link GitHub Issues <https://github.com/khaller93/woodcock/issues>`_ page.
+our `GitHub Issues <https://github.com/khaller93/woodcock/issues>`_ page.
 Describe the problem in detail so we can address it effectively.
 2. **Suggestions:** If you have ideas for new features or improvements, feel
 free to open a feature request issue. Clearly label it as an ``enhancement`` and
@@ -49,7 +49,7 @@ branch to avoid merge conflicts.
 Contact:
 ^^^^^^^^
 
-- Kevin Haller - `Link GitHub contact@kevinhaller.dev <mailto:contact@kevinhaller.dev>`_
+- Kevin Haller - `contact@kevinhaller.dev <mailto:contact@kevinhaller.dev>`_
 
 We truly appreciate every form of feedback and look forward to seeing your
 suggestions, bug reports, and contributions!

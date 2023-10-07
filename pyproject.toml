@@ -10,9 +10,17 @@ python = "^3.8"
 duckdb = "^0.9"
 
 [tool.poetry.group.dev.dependencies]
+autopep8 = "^2.0"
 pylint = "^2.0"
 pytest = "^7.0"
 pytest-mock = "*"
+
+[tool.autopep8]
+max_line_length = 120
+in-place = true
+recursive = true
+aggressive = 3
+indent-size = 2
 
 [build-system]
 requires = ["poetry-core"]

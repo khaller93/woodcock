@@ -17,7 +17,7 @@ jobs:
           os: [ubuntu-22.04, macos-latest, windows-latest]
       runs-on: ${{ matrix.os }}
       steps:
-        - name: Checkout app code
+        - name: Checkout App Code
           uses: actions/checkout@v3
         - name: Setup Python
           uses: actions/setup-python@v4
@@ -27,8 +27,8 @@ jobs:
           uses: abatilo/actions-poetry@v2
           with:
             poetry-version: ${{ matrix.poetry-version }}
-        - name: Install app dependencies
+        - name: Install App Dependencies
           run: poetry install
-        - name: Run tests
+        - name: Run Tests
           run: poetry run pytest -v
 

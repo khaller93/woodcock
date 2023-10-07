@@ -1,3 +1,5 @@
+"""Unit testing the DuckDB graph solution."""
+
 import unittest
 
 

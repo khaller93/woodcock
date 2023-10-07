@@ -1,11 +1,11 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+**/__pycache__
 *.py[cod]
 *$py.class
 
 # Temp directory & db files
 tmp/
-*.db
+**/*.db
 
 # Unit tests
 .pytest_cache/

@@ -43,7 +43,7 @@ class CompressionReader:
       self._source = _compression_map[self._compression](self._f)
     else:
       raise ValueError(
-        f'the compression type "{self._compression.name}" isn\'t supported')
+          f'the compression type "{self._compression.name}" isn\'t supported')
     return self
 
   def source(self) -> Iterable[str]:

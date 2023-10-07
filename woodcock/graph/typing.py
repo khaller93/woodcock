@@ -1,3 +1,5 @@
+"""Type definitions for the knowledge graph."""
+
 from typing import Hashable, Tuple, TypeVar
 
 ID = Hashable

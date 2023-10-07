@@ -199,12 +199,12 @@ class Graph(Generic[NodeLabel, NodeID, PropertyLabel, PropertyID]):
     raise NotImplementedError()
 
 
-_EXT_EDGE = Tuple[NodeLabel, PropertyLabel, NodeLabel]
+_ExtEdge = Tuple[NodeLabel, PropertyLabel, NodeLabel]
 
 
 class EmbeddedGraph(Generic[NodeLabel, NodeID, PropertyLabel, PropertyID]):
   """A simple knowledge graph that is embedded into the executing Python
   process."""
 
-  def import_data(self, data: Iterable[_EXT_EDGE]) -> None:
+  def import_data(self, data: Iterable[_ExtEdge]) -> None:
     pass

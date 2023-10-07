@@ -1,3 +1,5 @@
+"""The `EmbeddedGraph` class is implemented with DuckDB as storage solution."""
+
 import tempfile
 from os import makedirs
 from os.path import join, exists
@@ -191,6 +193,13 @@ class _DuckDBGraphIndex(GraphIndex[str, int, str, int]):
 
 
 class DuckDBGraph(EmbeddedGraph[str, int, str, int]):
+  """Implments the `EmbeddedGraph` class with DuckDB as storage solution.
+
+  Args:
+      db_dir_path: path to the directory at which to store the database files or
+      `None`, if a temporary directory should be created. The later will be 
+      not accessible across multiple runs of this application.
+  """
 
   def __init__(self, *, db_dir_path: str = None):
     self._db_dir_path = tempfile.mkdtemp() if db_dir_path is None \

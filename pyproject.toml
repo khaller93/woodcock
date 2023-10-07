@@ -6,7 +6,7 @@ authors = ["Kevin Haller <contact@kevinhaller.dev>"]
 readme = "README.rst"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.8"
 duckdb = "^0.9"
 
 [tool.poetry.group.dev.dependencies]

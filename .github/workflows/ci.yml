@@ -12,9 +12,12 @@ jobs:
       strategy:
         fail-fast: false
         matrix:
-          python-version: ["3.10", "3.11", "3.12"]
+          python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
           poetry-version: ["1.6.1"]
           os: [ubuntu-22.04, macos-latest, windows-latest]
+        exclude:
+          # DuckDB fails to install with Python 3.12
+          - python-version: 3.12
       runs-on: ${{ matrix.os }}
       steps:
         - name: Checkout App Code

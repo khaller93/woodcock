@@ -8,6 +8,7 @@ from woodcock.io.typing import FilePath
 
 
 class Compression(Enum):
+  """Type of the compression"""
   GZIP = 1
   BZIP2 = 2
   XY = 3
@@ -37,12 +38,12 @@ class CompressionReader:
 
   def __enter__(self) -> 'CompressionReader':
     if self._compression is None:
-      self._source = open(self._f, 'r')
+      self._source = open(self._f, 'rb')
     elif self._compression in _compression_map:
       self._source = _compression_map[self._compression](self._f)
     else:
-      raise ValueError('the compression type "%s" isn\'t supported'
-                       % self._compression.name)
+      raise ValueError(
+        f'the compression type "{self._compression.name}" isn\'t supported')
     return self
 
   def source(self) -> Iterable[str]:

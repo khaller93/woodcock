@@ -39,9 +39,7 @@ def edges_from_file(f: FilePath,
         row = next(it)
         if len(row) != 3:
           raise ValueError(
-              'edges must have exactly three columns, but has %d'
-              % len(row)
-          )
+              f'edges must have exactly three columns, but has {len(row)}')
         yield row[0], row[1], row[2]
     except StopIteration:
       pass

@@ -178,7 +178,7 @@ class _DuckDBGraphIndex(GraphIndex[str, int, str, int]):
       for label in node_labels:
         r = cursor.execute(_DBQueryCmd.GET_ID_FOR, [label]).fetchone()
         if r is None:
-          raise ValueError('the label "%s" isn\'t in the db' % r)
+          raise ValueError(f'the label {r} isn\'t in the db')
         yield r[0]
     finally:
       cursor.close()

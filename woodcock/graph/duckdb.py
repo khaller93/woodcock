@@ -7,18 +7,16 @@ import duckdb
 
 from woodcock.graph.graph import EmbeddedGraph, GraphQueryEngine, GraphIndex
 
-
-class _DBWriteCmd:
-  CREATE_RESOURCE_TABLE = '''
+_CREATE_RESOURCE_TABLE = '''
         CREATE TABLE IF NOT EXISTS resource (
             id INTEGER PRIMARY KEY,
             label VARCHAR NOT NULL UNIQUE
         );
     '''
-  CREATE_RESOURCE_ID_SEQUENCE = '''
+_CREATE_RESOURCE_ID_SEQUENCE = '''
         CREATE SEQUENCE IF NOT EXISTS resource_id_seq START 1;
     '''
-  CREATE_STATEMENT_TABLE = '''
+_CREATE_STATEMENT_TABLE = '''
         CREATE TABLE IF NOT EXISTS statement (
             no INTEGER PRIMARY KEY,
             subj INTEGER NOT NULL,
@@ -30,36 +28,34 @@ class _DBWriteCmd:
             UNIQUE(subj, pred, obj)
         );
     '''
-  CREATE_STATEMENT_ID_SEQUENCE = '''
+_CREATE_STATEMENT_ID_SEQUENCE = '''
         CREATE SEQUENCE IF NOT EXISTS statement_id_seq START 1;
     '''
-  CREATE_META_TABLE = '''
+_CREATE_META_TABLE = '''
         CREATE TABLE IF NOT EXISTS meta (
             key VARCHAR PRIMARY KEY,
             value VARCHAR NOT NULL
         );
     '''
-  INSERT_RESOURCE = '''
+_INSERT_RESOURCE = '''
         INSERT INTO resource (id, label) VALUES (nextval('resource_id_seq'), ?);
     '''
-  INSERT_STATEMENT = '''
+_INSERT_STATEMENT = '''
         INSERT OR IGNORE INTO statement (no, subj, pred, obj)
         VALUES (nextval('statement_id_seq'), ?, ?, ?);
     '''
 
-
-class _DBQueryCmd:
-  GET_ID_FOR = '''SELECT id FROM resource WHERE label = ?;'''
-  FETCH_NODE_IDS = '''
+_GET_ID_FOR = '''SELECT id FROM resource WHERE label = ?;'''
+_FETCH_NODE_IDS = '''
         SELECT DISTINCT id FROM (
             SELECT subj as id FROM statement UNION
             SELECT obj as id FROM statement
         );
     '''
-  FETCH_EDGE_TYPE_IDS = '''SELECT DISTINCT pred as id FROM statement;'''
-  FETCH_OUT_HOPS = '''SELECT pred, obj FROM statement WHERE subj = ?;'''
-  FETCH_IN_HOPS = '''SELECT subj, pred FROM statement WHERE obj = ?;'''
-  FETCH_EDGES = '''
+_FETCH_PROPERTY_TYPE_IDS = '''SELECT DISTINCT pred as id FROM statement;'''
+_FETCH_OUT_HOPS = '''SELECT pred, obj FROM statement WHERE subj = ?;'''
+_FETCH_IN_HOPS = '''SELECT subj, pred FROM statement WHERE obj = ?;'''
+_FETCH_EDGES = '''
         SELECT subj, pred, obj FROM statement
         WHERE (? IS NULL OR subj = ?) AND (? IS NULL OR pred =?)
             AND (? IS NULL OR obj = ?);
@@ -67,6 +63,7 @@ class _DBQueryCmd:
 
 
 class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
+  """The DuckDB-specific implementation of the graph query engine."""
 
   def __init__(self, db_file_path: str):
     self._db_file_path = db_file_path
@@ -82,7 +79,7 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
   def node_ids(self) -> Iterable[int]:
     cursor = self._con.cursor()
     try:
-      resp = cursor.sql(_DBQueryCmd.FETCH_NODE_IDS)
+      resp = cursor.sql(_FETCH_NODE_IDS)
       while True:
         r = resp.fetchone()
         if r is None:
@@ -91,10 +88,10 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
     finally:
       cursor.close()
 
-  def edge_type_ids(self) -> Iterable[int]:
+  def property_type_ids(self) -> Iterable[int]:
     cursor = self._con.cursor()
     try:
-      resp = cursor.sql(_DBQueryCmd.FETCH_EDGE_TYPE_IDS)
+      resp = cursor.sql(_FETCH_PROPERTY_TYPE_IDS)
       while True:
         r = resp.fetchone()
         if r is None:
@@ -106,7 +103,7 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
   def e_in(self, subj_node: int) -> Iterable[Tuple[int, int, int]]:
     cursor = self._con.cursor()
     try:
-      resp = cursor.execute(_DBQueryCmd.FETCH_OUT_HOPS, [subj_node])
+      resp = cursor.execute(_FETCH_OUT_HOPS, [subj_node])
       while True:
         r = resp.fetchone()
         if r is None:
@@ -118,7 +115,7 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
   def e_out(self, subj_node: int) -> Iterable[Tuple[int, int, int]]:
     cursor = self._con.cursor()
     try:
-      resp = cursor.execute(_DBQueryCmd.FETCH_IN_HOPS, [subj_node])
+      resp = cursor.execute(_FETCH_IN_HOPS, [subj_node])
       while True:
         r = resp.fetchone()
         if r is None:
@@ -127,12 +124,13 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
     finally:
       cursor.close()
 
-  def edges(self, subj_node: Union[int, None], edge_type: Union[int, None],
-            obj_node: Union[int, None]) -> Iterable[Tuple[int, int, int]]:
+  def edges(self, *, subj_node: Union[int, None] = None,
+            property_type: Union[int, None] = None, obj_node:
+            Union[int, None] = None) -> Iterable[Tuple[int, int, int]]:
     cursor = self._con.cursor()
     try:
-      resp = cursor.execute(_DBQueryCmd.FETCH_EDGES,
-                            [subj_node, subj_node, edge_type, edge_type,
+      resp = cursor.execute(_FETCH_EDGES,
+                            [subj_node, subj_node, property_type, property_type,
                              obj_node, obj_node])
       while True:
         r = resp.fetchone()
@@ -145,7 +143,7 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
   def node_count(self) -> int:
     pass
 
-  def edge_type_count(self) -> int:
+  def property_type_count(self) -> int:
     pass
 
   def edge_count(self) -> int:
@@ -160,6 +158,7 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
 
 
 class _DuckDBGraphIndex(GraphIndex[str, int, str, int]):
+  """The DuckDB-specific implementation of the graph index."""
 
   def __init__(self, db_file_path: str) -> None:
     self._db_file_path = db_file_path
@@ -176,7 +175,7 @@ class _DuckDBGraphIndex(GraphIndex[str, int, str, int]):
     cursor = self._con.cursor()
     try:
       for label in node_labels:
-        r = cursor.execute(_DBQueryCmd.GET_ID_FOR, [label]).fetchone()
+        r = cursor.execute(_GET_ID_FOR, [label]).fetchone()
         if r is None:
           raise ValueError(f'the label {r} isn\'t in the db')
         yield r[0]
@@ -202,17 +201,17 @@ class DuckDBGraph(EmbeddedGraph[str, int, str, int]):
 
   @staticmethod
   def _create_schema_if_not_exists(con: duckdb.DuckDBPyConnection):
-    con.sql(_DBWriteCmd.CREATE_RESOURCE_TABLE)
-    con.sql(_DBWriteCmd.CREATE_RESOURCE_ID_SEQUENCE)
-    con.sql(_DBWriteCmd.CREATE_STATEMENT_TABLE)
-    con.sql(_DBWriteCmd.CREATE_STATEMENT_ID_SEQUENCE)
-    con.sql(_DBWriteCmd.CREATE_META_TABLE)
+    con.sql(_CREATE_RESOURCE_TABLE)
+    con.sql(_CREATE_RESOURCE_ID_SEQUENCE)
+    con.sql(_CREATE_STATEMENT_TABLE)
+    con.sql(_CREATE_STATEMENT_ID_SEQUENCE)
+    con.sql(_CREATE_META_TABLE)
 
   @staticmethod
   def _insert_and_get_id(con: duckdb.DuckDBPyConnection, label: str) -> int:
-    r_id = con.execute(_DBQueryCmd.GET_ID_FOR, [label]).fetchone()
+    r_id = con.execute(_GET_ID_FOR, [label]).fetchone()
     if r_id is None:
-      con.execute(_DBWriteCmd.INSERT_RESOURCE, [label])
+      con.execute(_INSERT_RESOURCE, [label])
       return con.execute('SELECT currval(\'resource_id_seq\');') \
           .fetchone()[0]
     return r_id[0]
@@ -225,7 +224,7 @@ class DuckDBGraph(EmbeddedGraph[str, int, str, int]):
         subj = self._insert_and_get_id(con, stmt[0])
         pred = self._insert_and_get_id(con, stmt[1])
         obj = self._insert_and_get_id(con, stmt[2])
-        con.execute(_DBWriteCmd.INSERT_STATEMENT, [subj, pred, obj])
+        con.execute(_INSERT_STATEMENT, [subj, pred, obj])
       con.commit()
     finally:
       con.close()

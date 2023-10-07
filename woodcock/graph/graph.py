@@ -1,7 +1,7 @@
 """This module defines abstract classes for a knowledge graph, which could
 theoretically exist in any storage solution.
 
-A `Graph` is a simple knowledge graph, which has a `GraphIndex` and a 
+A `Graph` is a simple knowledge graph, which has a `GraphIndex` and a
 `GraphQueryEngine`. The `GraphIndex` maps the ID of entites (e.g. an URI/IRI)
 from the external source to internal IDs (e.g. integer numbers). A
 `GraphQueryEngine` can be used to perform simple queries on the knowledge graph.
@@ -12,6 +12,7 @@ anything more extensive.
 from typing import Tuple, Iterable, Generic, Union
 from woodcock.graph.typing import NodeID, PropertyID, Edge, NodeLabel, \
     PropertyLabel
+
 
 class GraphQueryEngine(Generic[NodeID, PropertyID]):
   """A serializable query engine over the complete graph."""

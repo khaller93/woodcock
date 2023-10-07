@@ -31,11 +31,11 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
     """
     raise NotImplementedError()
 
-  def edge_type_ids(self) -> Iterable[PropertyID]:
-    """Gets all edge type IDs in the graph without duplicates.
+  def property_type_ids(self) -> Iterable[PropertyID]:
+    """Gets all property type IDs in the graph without duplicates.
 
     Returns:
-        An iterable sequence of all edge types in the graph, whereas no
+        An iterable sequence of all property types in the graph, whereas no
         duplicates are returned.
     Raises:
         IOError: An error occurred accessing the query engine.
@@ -75,15 +75,15 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
     raise NotImplementedError()
 
   def edges(self, *, subj_node: Union[NodeID, None] = None,
-            edge_type: Union[PropertyID, None] = None,
+            property_type: Union[PropertyID, None] = None,
             obj_node: Union[NodeID, None] = None) -> Iterable[Edge]:
     """Gets all the edges that match the given filter.
 
     Args:
         subj_node: ID of the node on the subject position or `None`, if no
         filter shall be applied on the subject.
-        edge_type: ID of the edge type or `None`, if no filter shall be
-        applied on the edge type.
+        property_type: ID of the property type or `None`, if no filter shall be
+        applied on the property type.
         obj_node: ID of the node on the object position or `None`, if no
         filter shall be applied on the object.
     Returns:
@@ -105,11 +105,11 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
     """
     raise NotImplementedError()
 
-  def edge_type_count(self) -> int:
-    """Gets the number of distinct edge types in the graph.
+  def property_type_count(self) -> int:
+    """Gets the number of distinct property types in the graph.
 
     Returns:
-        The number of distinct edge types in the graph.
+        The number of distinct property types in the graph.
     Raises:
         IOError: An error occurred accessing the query engine.
     """

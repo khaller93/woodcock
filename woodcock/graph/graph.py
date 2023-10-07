@@ -1,26 +1,26 @@
-from typing import TypeVar, Tuple, Iterable, Generic, Union
-from woodcock.graph.typing import ID
+"""This module defines abstract classes for a knowledge graph, which could
+theoretically exist in any storage solution.
 
-_R = TypeVar('_R', bound=ID)
-# type for original node IDs
-_RS = TypeVar('_RS', bound=ID)
-# type for internal edge type IDs
-_E = TypeVar('_E', bound=ID)
-# type for original edge type IDs
-_ES = TypeVar('_ES', bound=ID)
-# triple with internal IDs
-_T = Tuple[_R, _E, _R]
-# triple with original IDs
-_TS = Tuple[_RS, _ES, _RS]
+A `Graph` is a simple knowledge graph, which has a `GraphIndex` and a 
+`GraphQueryEngine`. The `GraphIndex` maps the ID of entites (e.g. an URI/IRI)
+from the external source to internal IDs (e.g. integer numbers). A
+`GraphQueryEngine` can be used to perform simple queries on the knowledge graph.
+The query interface is limited as the generation of corpora doesn't necessitate
+anything more extensive.
+"""
 
+from typing import Tuple, Iterable, Generic, Union
+from woodcock.graph.typing import NodeID, PropertyID, Edge, NodeLabel, \
+    PropertyLabel
 
-class GraphQueryEngine(Generic[_R, _E]):
+class GraphQueryEngine(Generic[NodeID, PropertyID]):
   """A serializable query engine over the complete graph."""
 
   def open(self) -> None:
+    """Opens connection to the query engine, or does nothing."""
     pass
 
-  def node_ids(self) -> Iterable[_R]:
+  def node_ids(self) -> Iterable[NodeID]:
     """Gets all nodes in the graph without duplicates.
 
     Returns:
@@ -31,7 +31,7 @@ class GraphQueryEngine(Generic[_R, _E]):
     """
     raise NotImplementedError()
 
-  def edge_type_ids(self) -> Iterable[_E]:
+  def edge_type_ids(self) -> Iterable[PropertyID]:
     """Gets all edge type IDs in the graph without duplicates.
 
     Returns:
@@ -42,7 +42,7 @@ class GraphQueryEngine(Generic[_R, _E]):
     """
     raise NotImplementedError()
 
-  def e_in(self, subj_node: _R) -> Iterable[_T]:
+  def e_in(self, subj_node: NodeID) -> Iterable[Edge]:
     """Gets all ingoing edges for the given subject node.
 
     Args:
@@ -58,7 +58,7 @@ class GraphQueryEngine(Generic[_R, _E]):
     """
     raise NotImplementedError()
 
-  def e_out(self, subj_node: _R) -> Iterable[_T]:
+  def e_out(self, subj_node: NodeID) -> Iterable[Edge]:
     """Gets all outgoing edges for the given subject node.
 
     Args:
@@ -74,9 +74,9 @@ class GraphQueryEngine(Generic[_R, _E]):
     """
     raise NotImplementedError()
 
-  def edges(self, subj_node: Union[_R, None],
-            edge_type: Union[_E, None],
-            obj_node: Union[_R, None]) -> Iterable[_T]:
+  def edges(self, *, subj_node: Union[NodeID, None] = None,
+            edge_type: Union[PropertyID, None] = None,
+            obj_node: Union[NodeID, None] = None) -> Iterable[Edge]:
     """Gets all the edges that match the given filter.
 
     Args:
@@ -126,16 +126,18 @@ class GraphQueryEngine(Generic[_R, _E]):
     raise NotImplementedError()
 
   def close(self) -> None:
+    """Closes connection to the query engine, frees up resources, or does
+    nothing."""
     pass
 
 
-class GraphIndex(Generic[_RS, _R, _ES, _E]):
+class GraphIndex(Generic[NodeLabel, NodeID, PropertyLabel, PropertyID]):
   """A serializable index for a graph."""
 
   def open(self) -> None:
     pass
 
-  def node_id_for(self, node_label: _RS) -> _R:
+  def node_id_for(self, node_label: NodeLabel) -> NodeID:
     """Gets the internal node ID for the node with the given original label.
 
     Returns:
@@ -146,7 +148,7 @@ class GraphIndex(Generic[_RS, _R, _ES, _E]):
     """
     return next(iter(self.node_ids_for([node_label])))
 
-  def node_ids_for(self, node_labels: Iterable[_RS]) -> Iterable[_R]:
+  def node_ids_for(self, node_labels: Iterable[NodeLabel]) -> Iterable[NodeID]:
     """Gets iterable sequence of internal node IDs for given original node
     labels.
 
@@ -163,7 +165,7 @@ class GraphIndex(Generic[_RS, _R, _ES, _E]):
     pass
 
 
-class Graph(Generic[_RS, _R, _ES, _E]):
+class Graph(Generic[NodeLabel, NodeID, PropertyLabel, PropertyID]):
   """A simple knowledge graph.
 
   A simple knowledge graph consists of nodes and directed edges between those
@@ -175,7 +177,7 @@ class Graph(Generic[_RS, _R, _ES, _E]):
   triples (i.e. <subj node id> <edge id> <obj node id>).
   """
 
-  def index(self) -> GraphIndex[_RS, _R, _ES, _E]:
+  def index(self) -> GraphIndex[NodeLabel, NodeID, PropertyLabel, PropertyID]:
     """Gets a serializable index for this graph, which allows to get the
     internal ID for nodes as well as edge types given the original label.
 
@@ -186,7 +188,7 @@ class Graph(Generic[_RS, _R, _ES, _E]):
     """
     raise NotImplementedError()
 
-  def query_engine(self) -> GraphQueryEngine[_R, _E]:
+  def query_engine(self) -> GraphQueryEngine[NodeID, PropertyID]:
     """Gets a query engine for this graph.
 
     Returns:
@@ -197,8 +199,12 @@ class Graph(Generic[_RS, _R, _ES, _E]):
     raise NotImplementedError()
 
 
-class EmbeddedGraph(Generic[_RS, _R, _ES, _E]):
-  """A simple knowledge graph that is embedded into this application."""
+_EXT_EDGE = Tuple[NodeLabel, PropertyLabel, NodeLabel]
 
-  def import_data(self, data: Iterable[_TS]) -> None:
+
+class EmbeddedGraph(Generic[NodeLabel, NodeID, PropertyLabel, PropertyID]):
+  """A simple knowledge graph that is embedded into the executing Python
+  process."""
+
+  def import_data(self, data: Iterable[_EXT_EDGE]) -> None:
     pass

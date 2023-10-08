@@ -40,7 +40,7 @@ class CompressionReader:
 
   def __enter__(self) -> 'CompressionReader':
     if self._compression is None:
-      self._source = open(self._f, 'rb')
+      self._source = open(self._f, 'r', encoding='utf-8')
     elif self._compression in _compression_map:
       self._source = _compression_map[self._compression](self._f)
     else:

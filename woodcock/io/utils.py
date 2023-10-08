@@ -50,7 +50,7 @@ class _CompressedFile:
       raise ValueError('the encoding must only be set in "text" mode')
     if compression and compression not in _compression_map:
       raise ValueError(
-            f'the compression type "{self._compr.name}" isn\'t supported')
+          f'the compression type "{compression}" isn\'t supported')
 
     self._fp = fp
     self._m = mode
@@ -80,7 +80,7 @@ def copen(fp: FilePath, mode: str = 'text', *, compression: Compression,
       mode (str, optional): Describes the mode in which the file shall be
       opened. It can either be 'text' or 'bytes' mode. Defaults to 'text'.
       compression (Compression, optional): Compression type of the file. It
-      can also be None, which means that the file isn't compressed. Defaults 
+      can also be None, which means that the file isn't compressed. Defaults
       to None.
       encoding (str, optional): Name of the encoding used to decode or encode
       the file. This should only be used in 'text' mode. In text mode, if
@@ -90,6 +90,6 @@ def copen(fp: FilePath, mode: str = 'text', *, compression: Compression,
 
   Raises:
       ValueError: Received an argument that has an inappropriate value.
-  """  
+  """
   return _CompressedFile(fp=fp, mode=mode, compression=compression,
                          encoding=encoding)

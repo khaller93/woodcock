@@ -5,37 +5,43 @@ from typing import Iterable
 
 from woodcock.graph.typing import Edge
 from woodcock.io.typing import FilePath
-from woodcock.io.utils import Compression, CompressionReader
+from woodcock.io.utils import Compression, copen
 
 
-def open_csv_source(f: FilePath,
+def open_csv_source(fp: FilePath,
                     *,
+                    encoding: str = None,
                     compression: Compression = None,
                     skip_header: bool = False,
                     delimiter: str = ',') -> Iterable[Edge]:
   """Reads the edges from the specified CSV source.
 
   Args:
-      f: a file path to the source containing the edges. It must not be `None`
-      or an empty string.
-      compression: the compression type of the file. It can also be `None`, if
-      no compression is used for the file. It is `None` by default.
-      skip_header: `True`, if the first row shall be skipped, or `False`
-      otherwise. It is `False` by default.
-      delimiter: a delimiter used to separate columns in the CSV file. By
-      default, the comma character `,` is assumed as separator.
-
-  Returns:
-      A iterable sequence of edges that are contained in the given file.
+      fp (FilePath): file path to the source containing the edges. It must not
+      be None or an empty string.
+      encoding (str, optional):  Name of the encoding used to decode or encode
+      the content of the file. Defaults to None, which means the method
+      `locale.getencoding()` is called to get the current locale encoding. This
+      is platform-dependent.
+      compression (Compression, optional): Compression type of the file. It can
+      also be None, if no compression is used for the file. Defaults to None.
+      skip_header (bool, optional): True, if the first row shall be skipped, or
+      False otherwise. Defaults to False.
+      delimiter (str, optional): Delimiter used to separate columns in the CSV
+      file. Defaults to the comma character ','.
 
   Raises:
       IOError: An error occurred accessing the given file.
       ValueError: The content in the given CSV file is wrongly formatted.
+
+  Returns:
+      Iterable[Edge]: A iterable sequence of edges that are contained in the
+      given file.
   """
-  if not f:
+  if not fp:
     raise ValueError('a valid file path must be specified')
-  with CompressionReader(f, compression) as reader:
-    reader = csv.reader(reader.source(), delimiter=delimiter)
+  with copen(fp, mode='text', compression=compression, encoding=encoding) as f:
+    reader = csv.reader(f, delimiter=delimiter)
     it = iter(reader)
     try:
       if skip_header:

@@ -13,13 +13,13 @@ class Compression(Enum):
   """Type of the compression"""
   GZIP = 1
   BZIP2 = 2
-  XY = 3
+  XZ = 3
 
 
 _compression_map = {
     Compression.GZIP: lambda x: gzip.open(x, mode='rt'),
     Compression.BZIP2: lambda x: bz2.open(x, mode='rt'),
-    Compression.XY: lambda x: lzma.open(x, mode='rt')
+    Compression.XZ: lambda x: lzma.open(x, mode='rt')
 }
 
 

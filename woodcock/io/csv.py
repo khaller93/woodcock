@@ -8,15 +8,16 @@ from woodcock.io.typing import FilePath
 from woodcock.io.utils import Compression, CompressionReader
 
 
-def edges_from_file(f: FilePath,
+def open_csv_source(f: FilePath,
                     *,
                     compression: Compression = None,
                     skip_header: bool = False,
                     delimiter: str = ',') -> Iterable[Edge]:
-  """Reads the edges from the specified CSV file.
+  """Reads the edges from the specified CSV source.
 
   Args:
-      f: a file path to the source containing the edges.
+      f: a file path to the source containing the edges. It must not be `None`
+      or an empty string.
       compression: the compression type of the file. It can also be `None`, if
       no compression is used for the file. It is `None` by default.
       skip_header: `True`, if the first row shall be skipped, or `False`
@@ -31,6 +32,8 @@ def edges_from_file(f: FilePath,
       IOError: An error occurred accessing the given file.
       ValueError: The content in the given CSV file is wrongly formatted.
   """
+  if not f:
+    raise ValueError('a valid file path must be specified')
   with CompressionReader(f, compression) as reader:
     reader = csv.reader(reader.source(), delimiter=delimiter)
     it = iter(reader)

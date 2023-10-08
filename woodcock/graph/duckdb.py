@@ -197,7 +197,7 @@ class DuckDBGraph(EmbeddedGraph[str, int, str, int]):
 
   Args:
       db_dir_path: path to the directory at which to store the database files or
-      `None`, if a temporary directory should be created. The later will be 
+      `None`, if a temporary directory should be created. The later will be
       not accessible across multiple runs of this application.
   """
 

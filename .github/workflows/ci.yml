@@ -32,6 +32,8 @@ jobs:
             poetry-version: ${{ matrix.poetry-version }}
         - name: Install App Dependencies
           run: poetry install
+        - name: Check Code Formatting
+          run: poetry run pylint --recursive=y .
         - name: Run Tests
           run: poetry run pytest -v
 

@@ -17,9 +17,9 @@ class Compression(Enum):
 
 
 _compression_map = {
-    Compression.GZIP: lambda x: gzip.open(x, mode='rt'),
-    Compression.BZIP2: lambda x: bz2.open(x, mode='rt'),
-    Compression.XZ: lambda x: lzma.open(x, mode='rt')
+    Compression.GZIP: lambda x: gzip.open(x, mode='rt', encoding='utf-8'),
+    Compression.BZIP2: lambda x: bz2.open(x, mode='rt', encoding='utf-8'),
+    Compression.XZ: lambda x: lzma.open(x, mode='rt', encoding='utf-8')
 }
 
 

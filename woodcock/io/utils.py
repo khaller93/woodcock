@@ -1,3 +1,5 @@
+"""A module for utility classes to import data."""
+
 import bz2
 import gzip
 import lzma

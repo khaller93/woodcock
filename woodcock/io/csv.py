@@ -1,3 +1,5 @@
+"""This module includes methods to read edges from CSV files."""
+
 import csv
 from typing import Iterable
 

@@ -21,7 +21,7 @@ class TestDuckDBGraphIndex(unittest.TestCase, GraphIndexTesting):
     return -1
 
 
-class GraphDuckDBQueryTesting(GraphQueryTesting):
+class GraphDuckDBQueryTesting(unittest.TestCase, GraphQueryTesting):
 
   def create_new_kg(self) -> Graph:
     return DuckDBGraph()

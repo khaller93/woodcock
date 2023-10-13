@@ -98,8 +98,8 @@ all_property_labels = [
 ]
 
 
-class GraphIndexTesting:
-  """Unit testing for graph index."""
+class GraphTesting:
+  """Abstract unit testing class for graph index and query."""
 
   def create_new_kg(self) -> Graph:
     """creates a new KG to test.
@@ -122,6 +122,10 @@ class GraphIndexTesting:
     if isinstance(db, EmbeddedGraph):
       db.import_data(read_csv_file_from_resources('meowth.csv'))
     return db
+
+
+class GraphIndexTesting(GraphTesting):
+  """Unit testing for graph index."""
 
   def get_unknown_node_id(self) -> Hashable:
     """Gets a node ID representation that is unknown to the test data db.
@@ -224,3 +228,9 @@ class GraphIndexTesting:
     assert len(ids_list) == len(all_property_labels)
     labels = index.property_labels_for(ids_list)
     assert [l for l in labels] == all_property_labels
+
+
+class GraphQueryTesting(GraphTesting):
+
+  def test_nothing(self):
+    pass

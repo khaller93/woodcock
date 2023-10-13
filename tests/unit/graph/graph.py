@@ -3,11 +3,11 @@
 import csv
 
 from os.path import dirname, join
-from typing import Iterable, Tuple
+from typing import Iterable, Tuple, Hashable
 
 from pytest import raises
 
-from woodcock.graph.graph import EmbeddedGraph
+from woodcock.graph.graph import EmbeddedGraph, Graph
 
 
 def read_csv_file_from_resources(name: str) -> Iterable[Tuple[str, str, str]]:
@@ -101,7 +101,7 @@ all_property_labels = [
 class GraphIndexTesting:
   """Unit testing for graph index."""
 
-  def create_new_kg(self) -> EmbeddedGraph:
+  def create_new_kg(self) -> Graph:
     """creates a new KG to test.
 
     Raises:
@@ -112,15 +112,33 @@ class GraphIndexTesting:
     """
     raise NotImplementedError()
 
-  def create_data_db(self) -> EmbeddedGraph:
+  def create_data_db(self) -> Graph:
     """creates a new KG with data to test.
 
     Returns:
         EmbeddedGraph: a new KG with data to test.
     """
     db = self.create_new_kg()
-    db.import_data(read_csv_file_from_resources('meowth.csv'))
+    if isinstance(db, EmbeddedGraph):
+      db.import_data(read_csv_file_from_resources('meowth.csv'))
     return db
+
+  def get_unknown_node_id(self) -> Hashable:
+    """Gets a node ID representation that is unknown to the test data db.
+
+    Returns:
+        Hashable: a node ID representation that is unknown to the test data db.
+    """
+    pass
+
+  def get_unknown_property_id(self) -> Hashable:
+    """Gets a property ID representation that is unknown to the test data db.
+
+    Returns:
+        Hashable: a property ID representation that is unknown to the test
+        data db.
+    """
+    pass
 
   def test_index_must_return_not_none_index(self):
     assert self.create_new_kg().index() is not None
@@ -148,7 +166,7 @@ class GraphIndexTesting:
   def test_node_label_for_must_raise_value_error_if_node_id_is_unknown(self):
     index = self.create_data_db().index()
     with raises(ValueError):
-      index.node_label_for(-1)
+      index.node_label_for(self.get_unknown_node_id())
 
   def test_node_id_for_and_label_for_must_return_label_again(self):
     index = self.create_data_db().index()
@@ -189,7 +207,7 @@ class GraphIndexTesting:
   def test_prop_label_for_must_raise_value_error_if_prop_id_is_unknown(self):
     index = self.create_data_db().index()
     with raises(ValueError):
-      index.node_label_for(-1)
+      index.node_label_for(self.get_unknown_property_id())
 
   def test_prop_id_for_and_label_for_must_return_label_again(self):
     index = self.create_data_db().index()

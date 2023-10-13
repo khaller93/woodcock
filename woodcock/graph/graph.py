@@ -9,7 +9,7 @@ The query interface is limited as the generation of corpora doesn't necessitate
 anything more extensive.
 """
 
-from typing import Tuple, Iterable, Generic, Union
+from typing import Tuple, Iterable, Generic, Generator, Union
 from woodcock.graph.typing import NodeID, PropertyID, Edge, NodeLabel, \
     PropertyLabel
 
@@ -135,34 +135,152 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
 class GraphIndex(Generic[NodeLabel, NodeID, PropertyLabel, PropertyID]):
   """A serializable index for a graph."""
 
-  def open(self) -> None:
-    pass
-
   def node_id_for(self, node_label: NodeLabel) -> NodeID:
-    """Gets the internal node ID for the node with the given original label.
+    """Gets the ID for the node with the given label.
+
+    Args:
+        node_label (NodeLabel): The label of the node for which the ID shall be
+        returned.
+
+    Raises:
+        IOError: An error occurred accessing the query index.
+        ValueError: The given node label is unknown.
 
     Returns:
-        The internal node ID for the node with the given original label.
-    Raises:
-        IOError: An error occurred accessing the query engine.
-        ValueError: The given node label is unknown.
+        NodeID: The ID for the node with the given label.
     """
+    if node_label is None:
+      raise ValueError('the node label must not be None')
     return next(iter(self.node_ids_for([node_label])))
 
-  def node_ids_for(self, node_labels: Iterable[NodeLabel]) -> Iterable[NodeID]:
-    """Gets iterable sequence of internal node IDs for given original node
-    labels.
+  def node_ids_for(self, node_labels: Iterable[NodeLabel]) \
+          -> Generator[NodeID, None, None]:
+    """Gets sequence of node IDs for given node labels.
+
+    Args:
+        node_labels (Iterable[NodeLabel]): The sequence of node labels for which
+        the IDs shall be returned.
+
+    Raises:
+        IOError: An error occurred accessing the query index.
+        ValueError: One of the given node labels is unknown.
 
     Returns:
-        An iterable sequence of internal node IDs for the iterable sequence
-        of original node labels.
-    Raises:
-        IOError: An error occurred accessing the query engine.
-        ValueError: One of the given node labels is unknown.
+        Generator[NodeID]: A sequence of node IDs to the corresponding
+        sequence of original node labels.
     """
     raise NotImplementedError()
 
-  def close(self) -> None:
+  def node_label_for(self, node_id: NodeLabel) -> NodeLabel:
+    """Gets the node label for the node with the given ID.
+
+    Args:
+        node_id (NodeLabel): The ID of the node for which the node label shall
+        be returned.
+
+    Raises:
+        IOError: An error occurred accessing the query index.
+        ValueError: The given node label is unknown.
+
+    Returns:
+        NodeLabel: The label for the node with the given ID.
+    """
+    if node_id is None:
+      raise ValueError('the node ID must not be None')
+    return next(iter(self.node_labels_for([node_id])))
+
+  def node_labels_for(self, node_ids: Iterable[NodeID]) \
+          -> Generator[NodeLabel, None, None]:
+    """Gets sequence of node labels for the given node IDs.
+
+    Args:
+        node_ids (Iterable[NodeID]): The sequence of node IDs for which the node
+        labels shall be returned.
+
+    Raises:
+        IOError: An error occurred accessing the query index.
+        ValueError: One of the given node IDs is unknown.
+
+    Yields:
+        Generator[NodeLabel]: A sequence of node labels to the corresponding
+        sequence of node IDs.
+    """
+    raise NotImplementedError()
+
+  def property_id_for(self, property_label: PropertyLabel) -> PropertyID:
+    """Gets the ID for the property with the given label.
+
+    Args:
+        property_label (PropertyLabel): The label of the property for which the
+        ID shall be returned.
+
+    Raises:
+        IOError: An error occurred accessing the query index.
+        ValueError: The given property label is unknown.
+
+    Returns:
+        PropertyID: The ID for the property with the given label.
+    """
+    if property_label is None:
+      raise ValueError('the property label must not be None')
+    return next(iter(self.property_ids_for([property_label])))
+
+  def property_ids_for(self, property_labels: Iterable[PropertyLabel]) \
+          -> Generator[PropertyID, None, None]:
+    """Gets sequence of property IDs for given property labels.
+
+    Args:
+        property_labels (Iterable[PropertyLabel]): The sequence of property
+        labels for which the IDs shall be returned.
+
+    Raises:
+        IOError: An error occurred accessing the query index.
+        ValueError: One of the given property labels is unknown.
+
+    Returns:
+        Generator[PropertyID]: A sequence of property IDs to the corresponding
+        sequence of original property labels.
+    """
+    raise NotImplementedError()
+
+  def property_label_for(self, property_id: PropertyID) -> PropertyLabel:
+    """Gets the property label for the property with the given ID.
+
+    Args:
+        property_id (PropertyID): The ID of the property for which the property
+        label shall be returned.
+
+    Raises:
+        IOError: An error occurred accessing the query index.
+        ValueError: The given property ID is unknown.
+
+    Returns:
+        PropertyLabel: The label for the property with the given ID.
+    """
+    if property_id is None:
+      raise ValueError('the property ID must not be None')
+    return next(iter(self.property_labels_for([property_id])))
+
+  def property_labels_for(self, property_ids: Iterable[PropertyID]) \
+          -> Generator[PropertyLabel, None, None]:
+    """Gets sequence of property labels for the given property IDs.
+
+    Args:
+        property_ids (Iterable[PropertyID]): The sequence of property IDs for
+        which the property labels shall be returned.
+
+    Raises:
+        IOError: An error occurred accessing the query index.
+        ValueError: One of the given property IDs is unknown.
+
+    Yields:
+        Generator[PropertyLabel, None, None]: A sequence of property labels to
+        the corresponding sequence of property IDs.
+    """
+    raise NotImplementedError()
+
+  def shutdown(self) -> None:
+    """Shut the graph index down, and free up all resources."""
     pass
 
 
@@ -171,31 +289,33 @@ class Graph(Generic[NodeLabel, NodeID, PropertyLabel, PropertyID]):
 
   A simple knowledge graph consists of nodes and directed edges between those
   nodes. Each node has a unique hashable ID such as an integer, or a string.
-  An edge itself has a unique hashable ID as well, which must have the
-  same datatype as node IDs. An edge puts two nodes into a specific
-  relationship. However, it isn't possible to directly annotate edges with
-  properties in contrast to labelled property graphs. Edges are always
-  triples (i.e. <subj node id> <edge id> <obj node id>).
+  An edge itself has a unique hashable ID as well. An edge puts two nodes into
+  a specific relationship. However, it isn't possible to directly annotate edges
+  with properties in contrast to labelled property graphs. Edges are always
+  triples (i.e. `<subj node id> <edge id> <obj node id>`).
   """
 
   def index(self) -> GraphIndex[NodeLabel, NodeID, PropertyLabel, PropertyID]:
-    """Gets a serializable index for this graph, which allows to get the
-    internal ID for nodes as well as edge types given the original label.
+    """Gets a serializable index for this graph, which allows to get the ID for
+    nodes as well as edge types given the original label.
 
-    Returns:
-        A serializable index for this graph.
     Raises:
         IOError: An error occurred creating the query engine.
+
+    Returns:
+        GraphIndex[NodeLabel, NodeID, PropertyLabel, PropertyID]: A serializable
+        index for this graph.
     """
     raise NotImplementedError()
 
   def query_engine(self) -> GraphQueryEngine[NodeID, PropertyID]:
     """Gets a query engine for this graph.
 
-    Returns:
-        A serializable query engine for this graph.
     Raises:
         IOError: An error occurred creating the query engine.
+
+    Returns:
+        A serializable query engine for this graph.
     """
     raise NotImplementedError()
 
@@ -203,7 +323,7 @@ class Graph(Generic[NodeLabel, NodeID, PropertyLabel, PropertyID]):
 _ExtEdge = Tuple[NodeLabel, PropertyLabel, NodeLabel]
 
 
-class EmbeddedGraph(Generic[NodeLabel, NodeID, PropertyLabel, PropertyID]):
+class EmbeddedGraph(Graph[NodeLabel, NodeID, PropertyLabel, PropertyID]):
   """A simple knowledge graph that is embedded into the executing Python
   process."""
 

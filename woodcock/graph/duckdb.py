@@ -3,51 +3,64 @@
 import tempfile
 from os import makedirs
 from os.path import join, exists
-from typing import Tuple, Iterable, Union
+from typing import Tuple, Iterable, Union, Generator
 
 import duckdb
 
 from woodcock.graph.graph import EmbeddedGraph, GraphQueryEngine, GraphIndex
 
-_CREATE_RESOURCE_TABLE = '''
-        CREATE TABLE IF NOT EXISTS resource (
-            id INTEGER PRIMARY KEY,
-            label VARCHAR NOT NULL UNIQUE
-        );
-    '''
 _CREATE_RESOURCE_ID_SEQUENCE = '''
-        CREATE SEQUENCE IF NOT EXISTS resource_id_seq START 1;
-    '''
+  CREATE SEQUENCE IF NOT EXISTS resource_id_seq START 1;
+'''
+_CREATE_NODE_TABLE = '''
+  CREATE TABLE IF NOT EXISTS node (
+    node_id INTEGER PRIMARY KEY,
+    label VARCHAR NOT NULL UNIQUE
+  );
+'''
+_CREATE_EDGE_TABLE = '''
+  CREATE TABLE IF NOT EXISTS property (
+    prop_id INTEGER PRIMARY KEY,
+    label VARCHAR NOT NULL UNIQUE
+  );
+'''
 _CREATE_STATEMENT_TABLE = '''
-        CREATE TABLE IF NOT EXISTS statement (
-            no INTEGER PRIMARY KEY,
-            subj INTEGER NOT NULL,
-            pred INTEGER NOT NULL,
-            obj INTEGER NOT NULL,
-            FOREIGN KEY (subj) REFERENCES resource (id),
-            FOREIGN KEY (pred) REFERENCES resource (id),
-            FOREIGN KEY (obj) REFERENCES resource (id),
-            UNIQUE(subj, pred, obj)
-        );
-    '''
+  CREATE TABLE IF NOT EXISTS statement (
+    no INTEGER PRIMARY KEY,
+    subj INTEGER NOT NULL,
+    pred INTEGER NOT NULL,
+    obj INTEGER NOT NULL,
+    FOREIGN KEY (subj) REFERENCES node (node_id),
+    FOREIGN KEY (pred) REFERENCES property (prop_id),
+    FOREIGN KEY (obj) REFERENCES node (node_id),
+    UNIQUE(subj, pred, obj)
+  );
+'''
 _CREATE_STATEMENT_ID_SEQUENCE = '''
-        CREATE SEQUENCE IF NOT EXISTS statement_id_seq START 1;
-    '''
+  CREATE SEQUENCE IF NOT EXISTS statement_id_seq START 1;
+'''
 _CREATE_META_TABLE = '''
         CREATE TABLE IF NOT EXISTS meta (
             key VARCHAR PRIMARY KEY,
             value VARCHAR NOT NULL
         );
     '''
-_INSERT_RESOURCE = '''
-        INSERT INTO resource (id, label) VALUES (nextval('resource_id_seq'), ?);
-    '''
+_INSERT_NODE = '''
+  INSERT INTO node (node_id, label) VALUES (nextval('resource_id_seq'), ?);
+'''
+_INSERT_EDGE = '''
+  INSERT INTO property (prop_id, label) VALUES (nextval('resource_id_seq'), ?);
+'''
 _INSERT_STATEMENT = '''
         INSERT OR IGNORE INTO statement (no, subj, pred, obj)
         VALUES (nextval('statement_id_seq'), ?, ?, ?);
     '''
 
-_GET_ID_FOR = '''SELECT id FROM resource WHERE label = ?;'''
+_GET_NODE_ID_FOR = '''SELECT node_id FROM node WHERE label = ?;'''
+_GET_PROPERTY_ID_FOR = '''SELECT prop_id FROM property WHERE label = ?;'''
+_GET_NODE_LABEL_FOR = '''SELECT label FROM node WHERE node_id = ?;'''
+_GET_PROPERTY_LABEL_FOR = '''SELECT label FROM property WHERE prop_id = ?;'''
+_GET_PROPERTY_ID_FOR = '''SELECT prop_id FROM property WHERE label = ?;'''
 _FETCH_NODE_IDS = '''
         SELECT DISTINCT id FROM (
             SELECT subj as id FROM statement UNION
@@ -166,30 +179,63 @@ class _DuckDBGraphIndex(GraphIndex[str, int, str, int]):
     self._db_file_path = db_file_path
     self._con: Union[duckdb.DuckDBPyConnection, None] = None
 
-  def __enter__(self) -> '_DuckDBGraphIndex':
-    self.open()
-    return self
+  @property
+  def _connection(self):
+    if not self._con:
+      self._con = duckdb.connect(self._db_file_path, True)
+    return self._con
 
-  def open(self):
-    self._con = duckdb.connect(self._db_file_path, True)
-
-  def node_ids_for(self, node_labels: Iterable[str]) -> Iterable[int]:
-    cursor = self._con.cursor()
+  def node_ids_for(self, node_labels: Iterable[str]) \
+          -> Generator[int, None, None]:
+    cursor = self._connection.cursor()
     try:
       for label in node_labels:
-        r = cursor.execute(_GET_ID_FOR, [label]).fetchone()
+        r = cursor.execute(_GET_NODE_ID_FOR, [label]).fetchone()
         if r is None:
-          raise ValueError(f'the label {r} isn\'t in the db')
+          raise ValueError(f'the node label "{r}" isn\'t in the db')
         yield r[0]
     finally:
       cursor.close()
 
-  def close(self):
+  def node_labels_for(self, node_ids: Iterable[int]) \
+          -> Generator[str, None, None]:
+    cursor = self._connection.cursor()
+    try:
+      for node_id in node_ids:
+        r = cursor.execute(_GET_NODE_LABEL_FOR, [node_id]).fetchone()
+        if r is None:
+          raise ValueError(f'the node ID "{r}" isn\'t in the db')
+        yield r[0]
+    finally:
+      cursor.close()
+
+  def property_ids_for(self, property_labels: Iterable[str]) \
+          -> Generator[int, None, None]:
+    cursor = self._connection.cursor()
+    try:
+      for label in property_labels:
+        r = cursor.execute(_GET_PROPERTY_ID_FOR, [label]).fetchone()
+        if r is None:
+          raise ValueError(f'the property label "{r}" isn\'t in the db')
+        yield r[0]
+    finally:
+      cursor.close()
+
+  def property_labels_for(self, property_ids: Iterable[int]) \
+          -> Generator[str, None, None]:
+    cursor = self._connection.cursor()
+    try:
+      for prop_id in property_ids:
+        r = cursor.execute(_GET_PROPERTY_LABEL_FOR, [prop_id]).fetchone()
+        if r is None:
+          raise ValueError(f'the property ID "{r}" isn\'t in the db')
+        yield r[0]
+    finally:
+      cursor.close()
+
+  def shutdown(self):
     if self._con is not None:
       self._con.close()
-
-  def __exit__(self, exc_type, exc_val, exc_tb):
-    self.close()
 
 
 class DuckDBGraph(EmbeddedGraph[str, int, str, int]):
@@ -210,17 +256,20 @@ class DuckDBGraph(EmbeddedGraph[str, int, str, int]):
 
   @staticmethod
   def _create_schema_if_not_exists(con: duckdb.DuckDBPyConnection):
-    con.sql(_CREATE_RESOURCE_TABLE)
+    con.sql(_CREATE_NODE_TABLE)
+    con.sql(_CREATE_EDGE_TABLE)
     con.sql(_CREATE_RESOURCE_ID_SEQUENCE)
     con.sql(_CREATE_STATEMENT_TABLE)
     con.sql(_CREATE_STATEMENT_ID_SEQUENCE)
     con.sql(_CREATE_META_TABLE)
 
   @staticmethod
-  def _insert_and_get_id(con: duckdb.DuckDBPyConnection, label: str) -> int:
-    r_id = con.execute(_GET_ID_FOR, [label]).fetchone()
+  def _insert_and_get_id(con: duckdb.DuckDBPyConnection, label: str,
+                         is_edge: bool = False) -> int:
+    r_id = con.execute(_GET_PROPERTY_ID_FOR if is_edge else _GET_NODE_ID_FOR,
+                       [label]).fetchone()
     if r_id is None:
-      con.execute(_INSERT_RESOURCE, [label])
+      con.execute(_INSERT_EDGE if is_edge else _INSERT_NODE, [label])
       return con.execute('SELECT currval(\'resource_id_seq\');') \
           .fetchone()[0]
     return r_id[0]
@@ -231,7 +280,7 @@ class DuckDBGraph(EmbeddedGraph[str, int, str, int]):
       self._create_schema_if_not_exists(con)
       for stmt in data:
         subj = self._insert_and_get_id(con, stmt[0])
-        pred = self._insert_and_get_id(con, stmt[1])
+        pred = self._insert_and_get_id(con, stmt[1], is_edge=True)
         obj = self._insert_and_get_id(con, stmt[2])
         con.execute(_INSERT_STATEMENT, [subj, pred, obj])
       con.commit()

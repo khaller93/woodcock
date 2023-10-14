@@ -44,6 +44,11 @@ def all_out_edges(i, x):
                 i.node_id_for(o)) for s, p, o in test_data if s == x])
 
 
+def all_in_edges(i, x):
+  return list([(i.node_id_for(s), i.property_id_for(p),
+                i.node_id_for(o)) for s, p, o in test_data if o == x])
+
+
 all_property_labels = list({p for _, p, _ in test_data})
 
 
@@ -233,6 +238,24 @@ class GraphQueryTesting(GraphTesting):
   def test_property_type_count_must_return_cor_count_when_complete_graph(self):
     engine = self.create_data_db().query_engine()
     assert engine.property_type_count() == len(all_property_labels)
+
+  def test_e_in_must_raise_value_error_when_id_for_empty_graph(self):
+    engine = self.create_new_kg().query_engine()
+    with raises(ValueError):
+      next(iter(engine.e_in(self.get_unknown_node_id())))
+
+  def test_e_in_must_raise_value_error_when_id_unknown_for_graph(self):
+    engine = self.create_data_db().query_engine()
+    with raises(ValueError):
+      next(iter(engine.e_in(self.get_unknown_node_id())))
+
+  def test_e_in_must_return_outgoing_edges_when_id_known_for_graph(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    edges = engine.e_in(index.node_id_for('PokéType:Normal'))
+    assert edges is not None
+    assert sorted([e for e in edges]) == sorted(
+        all_in_edges(index, 'PokéType:Normal'))
 
   def test_e_out_must_raise_value_error_when_id_for_empty_graph(self):
     engine = self.create_new_kg().query_engine()

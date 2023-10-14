@@ -17,61 +17,65 @@ from woodcock.graph.typing import NodeID, PropertyID, Edge, NodeLabel, \
 class GraphQueryEngine(Generic[NodeID, PropertyID]):
   """A serializable query engine over the complete graph."""
 
-  def open(self) -> None:
-    """Opens connection to the query engine, or does nothing."""
-    pass
-
-  def node_ids(self) -> Iterable[NodeID]:
+  def node_ids(self) -> Generator[NodeID, None, None]:
     """Gets all nodes in the graph without duplicates.
 
-    Returns:
-        An iterable sequence of all nodes in the graph, whereas no
-        duplicates are returned.
     Raises:
         IOError: An error occurred accessing the query engine.
+
+    Yields:
+        Generator[NodeID, None, None]: A sequence of all nodes in the
+        graph, whereas no duplicates are returned.
     """
     raise NotImplementedError()
 
-  def property_type_ids(self) -> Iterable[PropertyID]:
+  def property_ids(self) -> Generator[PropertyID, None, None]:
     """Gets all property type IDs in the graph without duplicates.
 
-    Returns:
-        An iterable sequence of all property types in the graph, whereas no
-        duplicates are returned.
     Raises:
         IOError: An error occurred accessing the query engine.
+
+    Yields:
+        Generator[PropertyID, None, None]: A sequence of all property types in
+        the graph, whereas no duplicates are returned.
     """
     raise NotImplementedError()
 
-  def e_in(self, subj_node: NodeID) -> Iterable[Edge]:
+  def e_in(self, subj_node: NodeID) -> Generator[Edge, None, None]:
     """Gets all ingoing edges for the given subject node.
 
     Args:
-        subj_node: ID of the node for which the ingoing edges shall be
+        subj_node (NodeID): ID of the node for which the ingoing edges shall be
         returned.
-    Returns:
-        An iterable sequence of all ingoing edges. The subject node will be
-        on the object position of these edges. For the node with the ID
-        `ex:bob`, this would for example be:
-        `[('ex:alice', 'foaf:knows', 'ex:bob')]`
+
     Raises:
         IOError: An error occurred accessing the query engine.
+        ValueError: If the subject node doesn't exist in the graph.
+
+    Yields:
+        Generator[Edge, None, None]: An iterable sequence of all ingoing edges.
+        The subject node will be on the object position of these edges. For the
+        node with the ID `ex:bob`, this would for example be:
+        `[('ex:alice', 'foaf:knows', 'ex:bob')]`
     """
     raise NotImplementedError()
 
-  def e_out(self, subj_node: NodeID) -> Iterable[Edge]:
+  def e_out(self, subj_node: NodeID) -> Generator[Edge, None, None]:
     """Gets all outgoing edges for the given subject node.
 
     Args:
-        subj_node: ID of the node for which the outgoing edges shall be
-        returned.
-    Returns:
-        An iterable sequence of all outgoing edges. The subject node will be
-        on the subject position of these edges. For the node with the ID
-        `ex:bob`, this would for example be:
-        `[('ex:bob', 'foaf:knows', 'ex:ash')]`
+        subj_node (NodeID):  ID of the node for which the outgoing edges shall
+        be returned.
+
     Raises:
         IOError: An error occurred accessing the query engine.
+        ValueError: If the subject node doesn't exist in the graph.
+
+    Yields:
+        Generator[Edge, None, None]: An iterable sequence of all outgoing edges.
+        The subject node will be on the subject position of these edges. For the
+        node with the ID `ex:bob`, this would for example be:
+        `[('ex:bob', 'foaf:knows', 'ex:ash')]`
     """
     raise NotImplementedError()
 

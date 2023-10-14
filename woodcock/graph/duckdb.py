@@ -1,6 +1,7 @@
 """The `EmbeddedGraph` class is implemented with DuckDB as storage solution."""
 
 import tempfile
+from functools import lru_cache
 from os import makedirs
 from os.path import join, exists
 from typing import Tuple, Iterable, Union, Generator
@@ -61,13 +62,8 @@ _GET_PROPERTY_ID_FOR = '''SELECT prop_id FROM property WHERE label = ?;'''
 _GET_NODE_LABEL_FOR = '''SELECT label FROM node WHERE node_id = ?;'''
 _GET_PROPERTY_LABEL_FOR = '''SELECT label FROM property WHERE prop_id = ?;'''
 _GET_PROPERTY_ID_FOR = '''SELECT prop_id FROM property WHERE label = ?;'''
-_FETCH_NODE_IDS = '''
-        SELECT DISTINCT id FROM (
-            SELECT subj as id FROM statement UNION
-            SELECT obj as id FROM statement
-        );
-    '''
-_FETCH_PROPERTY_TYPE_IDS = '''SELECT DISTINCT pred as id FROM statement;'''
+_FETCH_NODE_IDS = '''SELECT node_id FROM node;'''
+_FETCH_PROPERTY_TYPE_IDS = '''SELECT prop_id FROM property;'''
 _FETCH_OUT_HOPS = '''SELECT pred, obj FROM statement WHERE subj = ?;'''
 _FETCH_IN_HOPS = '''SELECT subj, pred FROM statement WHERE obj = ?;'''
 _FETCH_EDGES = '''
@@ -84,15 +80,14 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
     self._db_file_path = db_file_path
     self._con: Union[duckdb.DuckDBPyConnection, None] = None
 
-  def __enter__(self) -> '_DuckDBGraphQueryEngine':
-    self.open()
-    return self
+  @property
+  def _connection(self) -> duckdb.DuckDBPyConnection:
+    if not self._con:
+      self._con = duckdb.connect(self._db_file_path, True)
+    return self._con
 
-  def open(self) -> None:
-    self._con = duckdb.connect(self._db_file_path, True)
-
-  def node_ids(self) -> Iterable[int]:
-    cursor = self._con.cursor()
+  def node_ids(self) -> Generator[int, None, None]:
+    cursor = self._connection.cursor()
     try:
       resp = cursor.sql(_FETCH_NODE_IDS)
       while True:
@@ -103,8 +98,8 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
     finally:
       cursor.close()
 
-  def property_type_ids(self) -> Iterable[int]:
-    cursor = self._con.cursor()
+  def property_ids(self) -> Generator[int, None, None]:
+    cursor = self._connection.cursor()
     try:
       resp = cursor.sql(_FETCH_PROPERTY_TYPE_IDS)
       while True:
@@ -115,20 +110,15 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
     finally:
       cursor.close()
 
-  def e_in(self, subj_node: int) -> Iterable[Tuple[int, int, int]]:
-    cursor = self._con.cursor()
-    try:
-      resp = cursor.execute(_FETCH_OUT_HOPS, [subj_node])
-      while True:
-        r = resp.fetchone()
-        if r is None:
-          break
-        yield subj_node, r[0], r[1]
-    finally:
-      cursor.close()
+  @lru_cache(maxsize=10_000)
+  def _does_node_id_exist(self, node_id: int) -> bool:
+    return bool(self._connection.sql('SELECT 1 FROM node WHERE node_id = ?;',
+                                     params=[node_id]).fetchone())
 
-  def e_out(self, subj_node: int) -> Iterable[Tuple[int, int, int]]:
-    cursor = self._con.cursor()
+  def e_in(self, subj_node: int) -> Generator[Tuple[int, int, int], None, None]:
+    if not self._does_node_id_exist(subj_node):
+      raise ValueError(f'node with ID "{subj_node}" doesn\'t exist in db')
+    cursor = self._connection.cursor()
     try:
       resp = cursor.execute(_FETCH_IN_HOPS, [subj_node])
       while True:
@@ -139,10 +129,25 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
     finally:
       cursor.close()
 
+  def e_out(self, subj_node: int) \
+          -> Generator[Tuple[int, int, int], None, None]:
+    if not self._does_node_id_exist(subj_node):
+      raise ValueError(f'node with ID "{subj_node}" doesn\'t exist in db')
+    cursor = self._connection.cursor()
+    try:
+      resp = cursor.execute(_FETCH_OUT_HOPS, [subj_node])
+      while True:
+        r = resp.fetchone()
+        if r is None:
+          break
+        yield subj_node, r[0], r[1]
+    finally:
+      cursor.close()
+
   def edges(self, *, subj_node: Union[int, None] = None,
             property_type: Union[int, None] = None, obj_node:
             Union[int, None] = None) -> Iterable[Tuple[int, int, int]]:
-    cursor = self._con.cursor()
+    cursor = self._connection.cursor()
     try:
       resp = cursor.execute(_FETCH_EDGES,
                             [subj_node, subj_node, property_type, property_type,
@@ -168,9 +173,6 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
     if self._con is not None:
       self._con.close()
 
-  def __exit__(self, exc_type, exc_val, exc_tb):
-    self.close()
-
 
 class _DuckDBGraphIndex(GraphIndex[str, int, str, int]):
   """The DuckDB-specific implementation of the graph index."""
@@ -180,7 +182,7 @@ class _DuckDBGraphIndex(GraphIndex[str, int, str, int]):
     self._con: Union[duckdb.DuckDBPyConnection, None] = None
 
   @property
-  def _connection(self):
+  def _connection(self) -> duckdb.DuckDBPyConnection:
     if not self._con:
       self._con = duckdb.connect(self._db_file_path, True)
     return self._con
@@ -253,15 +255,21 @@ class DuckDBGraph(EmbeddedGraph[str, int, str, int]):
     if not exists(self._db_dir_path):
       makedirs(self._db_dir_path)
     self._db_path = join(self._db_dir_path, 'duck.db')
+    self._create_schema_if_not_exist()
 
-  @staticmethod
-  def _create_schema_if_not_exists(con: duckdb.DuckDBPyConnection):
-    con.sql(_CREATE_NODE_TABLE)
-    con.sql(_CREATE_EDGE_TABLE)
-    con.sql(_CREATE_RESOURCE_ID_SEQUENCE)
-    con.sql(_CREATE_STATEMENT_TABLE)
-    con.sql(_CREATE_STATEMENT_ID_SEQUENCE)
-    con.sql(_CREATE_META_TABLE)
+  def _create_schema_if_not_exist(self):
+    """creates the database schema, if it doesn't exist."""
+    con = duckdb.connect(self._db_path)
+    try:
+      con.sql(_CREATE_NODE_TABLE)
+      con.sql(_CREATE_EDGE_TABLE)
+      con.sql(_CREATE_RESOURCE_ID_SEQUENCE)
+      con.sql(_CREATE_STATEMENT_TABLE)
+      con.sql(_CREATE_STATEMENT_ID_SEQUENCE)
+      con.sql(_CREATE_META_TABLE)
+      con.commit()
+    finally:
+      con.close()
 
   @staticmethod
   def _insert_and_get_id(con: duckdb.DuckDBPyConnection, label: str,
@@ -277,7 +285,6 @@ class DuckDBGraph(EmbeddedGraph[str, int, str, int]):
   def import_data(self, data: Iterable[Tuple[str, str, str]]) -> None:
     con = duckdb.connect(self._db_path)
     try:
-      self._create_schema_if_not_exists(con)
       for stmt in data:
         subj = self._insert_and_get_id(con, stmt[0])
         pred = self._insert_and_get_id(con, stmt[1], is_edge=True)

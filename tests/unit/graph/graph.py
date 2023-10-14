@@ -1,101 +1,50 @@
 """Abstract unit testing template for knwoledge graph solutions."""
 
-import csv
-
-from os.path import dirname, join
-from typing import Iterable, Tuple, Hashable
+from typing import Hashable
 
 from pytest import raises
 
 from woodcock.graph.graph import EmbeddedGraph, Graph
 
-
-def read_csv_file_from_resources(name: str) -> Iterable[Tuple[str, str, str]]:
-  """reads test data from a CSV file in the resources folder, which is stored
-  under the given name.
-
-  Args:
-      name (str): name of the CSV file from which the test data shall be read.
-
-  Returns:
-      Iterable[Tuple[str, str, str]]: a sequence of triples.
-  """
-  data_file = join(dirname(__file__), 'resources', name)
-  with open(data_file, 'r', encoding='utf-8') as f:
-    reader = csv.reader(f, delimiter=',')
-    return [tuple(line) for line in reader]
-
-
-# Meowth dataset:
-# +----------------+----------------------+-----------------------------------+
-# |      subj      |         pred         |                obj                |
-# +----------------+----------------------+-----------------------------------+
-# | pokemon/meowth | describedInPokédex   | pokedex/national/entry/52         |
-# | pokemon/meowth | describedInPokédex   | pokedex/kanto/entry/52            |
-# | pokemon/meowth | describedInPokédex   | pokedex/original-johto/entry/136  |
-# | pokemon/meowth | describedInPokédex   | pokedex/updated-johto/entry/138   |
-# | pokemon/meowth | describedInPokédex   | pokedex/conquest-gallery/entry/58 |
-# | pokemon/meowth | foundIn              | Habitat:Urban                     |
-# | pokemon/meowth | hasColour            | dbpedia.org/resource/Yellow       |
-# | pokemon/meowth | hasShape             | Shape:Quadruped                   |
-# | pokemon/meowth | hasType              | PokéType:Dark                     |
-# | pokemon/meowth | hasType              | PokéType:Normal                   |
-# | pokemon/meowth | hasType              | PokéType:Steel                    |
-# | pokemon/meowth | inEggGroup           | EggGroup:Field                    |
-# | pokemon/meowth | mayHaveAbility       | ability/pickup                    |
-# | pokemon/meowth | mayHaveAbility       | ability/technician                |
-# | pokemon/meowth | mayHaveAbility       | ability/unnerve                   |
-# | pokemon/meowth | mayHaveHiddenAbility | ability/unnerve                   |
-# | pokemon/meowth | hasHeight            | pokemon/meowth/height/quantity    |
-# | pokemon/meowth | hasWeight            | pokemon/meowth/weight/quantity    |
-# | pokemon/meowth | isAbleToApply        | move/pay-day                      |
-# | pokemon/meowth | isAbleToApply        | move/scratch                      |
-# | pokemon/meowth | isAbleToApply        | move/bite                         |
-# | pokemon/meowth | isAbleToApply        | move/growl                        |
-# | pokemon/meowth | isAbleToApply        | move/screech                      |
-# | pokemon/meowth | isAbleToApply        | move/fury-swipes                  |
-# | pokemon/meowth | isAbleToApply        | move/slash                        |
-# +----------------+----------------------+-----------------------------------+
-
-all_node_labels = [
-    'pokemon/meowth',
-    'pokedex/national/entry/52',
-    'pokedex/kanto/entry/52',
-    'pokedex/original-johto/entry/136',
-    'pokedex/updated-johto/entry/138',
-    'pokedex/conquest-gallery/entry/58',
-    'Habitat:Urban',
-    'dbpedia.org/resource/Yellow',
-    'Shape:Quadruped',
-    'PokéType:Dark',
-    'PokéType:Normal',
-    'PokéType:Steel',
-    'EggGroup:Field',
-    'ability/pickup',
-    'ability/technician',
-    'ability/unnerve',
-    'pokemon/meowth/height/quantity',
-    'move/pay-day',
-    'move/scratch',
-    'move/bite',
-    'move/growl',
-    'move/screech',
-    'move/fury-swipes',
-    'move/slash'
+test_data = [
+    ('pokemon/eevee', 'foundIn', 'Habitat:Urban'),
+    ('pokemon/eevee', 'inEggGroup', 'EggGroup:Field'),
+    ('pokemon/eevee', 'hasShape', 'Shape:Quadruped'),
+    ('pokemon/eevee', 'hasType', 'PokéType:Normal'),
+    ('pokemon/meowth', 'foundIn', 'Habitat:Urban'),
+    ('pokemon/meowth', 'hasShape', 'Shape:Quadruped'),
+    ('pokemon/meowth', 'hasType', 'PokéType:Dark'),
+    ('pokemon/meowth', 'hasType', 'PokéType:Normal'),
+    ('pokemon/meowth', 'hasType', 'PokéType:Steel'),
+    ('pokemon/meowth', 'inEggGroup', 'EggGroup:Field'),
+    ('pokemon/meowth', 'mayHaveAbility', 'ability/pickup'),
+    ('pokemon/meowth', 'mayHaveAbility', 'ability/technician'),
+    ('pokemon/meowth', 'mayHaveAbility', 'ability/unnerve'),
+    ('pokemon/meowth', 'mayHaveHiddenAbility', 'ability/unnerve'),
+    ('pokemon/meowth', 'isAbleToApply', 'move/pay-day'),
+    ('pokemon/meowth', 'isAbleToApply', 'move/scratch'),
+    ('pokemon/meowth', 'isAbleToApply', 'move/bite'),
+    ('pokemon/meowth', 'isAbleToApply', 'move/growl'),
+    ('pokemon/meowth', 'isAbleToApply', 'move/screech'),
+    ('pokemon/meowth', 'isAbleToApply', 'move/fury-swipes'),
+    ('pokemon/meowth', 'isAbleToApply', 'move/slash'),
+    ('pokemon/jigglypuff', 'foundIn', 'Habitat:Grassland'),
+    ('pokemon/jigglypuff', 'inEggGroup', 'EggGroup:Fairy'),
+    ('pokemon/jigglypuff', 'hasShape', 'Shape:Humanoid'),
+    ('pokemon/jigglypuff', 'hasType', 'PokéType:Fairy'),
+    ('pokemon/jigglypuff', 'hasType', 'PokéType:Normal'),
 ]
 
-all_property_labels = [
-    'describedInPokédex',
-    'foundIn',
-    'hasColour',
-    'hasShape',
-    'hasType',
-    'inEggGroup',
-    'mayHaveAbility',
-    'mayHaveHiddenAbility',
-    'hasHeight',
-    'isAbleToApply'
-]
+all_node_labels = list({s for s, _, _ in test_data}
+                       .union({o for _, _, o in test_data}))
+
+
+def all_out_edges(i, x):
+  return list([(i.node_id_for(s), i.property_id_for(p),
+                i.node_id_for(o)) for s, p, o in test_data if s == x])
+
+
+all_property_labels = list({p for _, p, _ in test_data})
 
 
 class GraphTesting:
@@ -120,12 +69,8 @@ class GraphTesting:
     """
     db = self.create_new_kg()
     if isinstance(db, EmbeddedGraph):
-      db.import_data(read_csv_file_from_resources('meowth.csv'))
+      db.import_data(test_data)
     return db
-
-
-class GraphIndexTesting(GraphTesting):
-  """Unit testing for graph index."""
 
   def get_unknown_node_id(self) -> Hashable:
     """Gets a node ID representation that is unknown to the test data db.
@@ -143,6 +88,10 @@ class GraphIndexTesting(GraphTesting):
         data db.
     """
     pass
+
+
+class GraphIndexTesting(GraphTesting):
+  """Unit testing for graph index."""
 
   def test_index_must_return_not_none_index(self):
     assert self.create_new_kg().index() is not None
@@ -231,6 +180,58 @@ class GraphIndexTesting(GraphTesting):
 
 
 class GraphQueryTesting(GraphTesting):
+  """Unit testing for query engine."""
 
-  def test_nothing(self):
-    pass
+  def test_query_engine_must_return_not_none_query_engine(self):
+    engine = self.create_data_db().query_engine()
+    assert engine is not None
+
+  def test_node_ids_must_return_all_distinct_node_ids(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    node_ids = engine.node_ids()
+    assert node_ids is not None
+    node_id_list = [nid for nid in node_ids]
+    assert len(node_id_list) == len(all_node_labels)
+    node_labels = index.node_labels_for(node_id_list)
+    assert sorted([l for l in node_labels]) == sorted(all_node_labels)
+
+  def test_node_ids_must_return_empty_sequence_for_empty_graph(self):
+    engine = self.create_new_kg().query_engine()
+    node_ids = engine.node_ids()
+    assert node_ids is not None
+    assert [nid for nid in node_ids] == []
+
+  def test_property_ids_must_return_all_distinct_property_ids(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    prop_ids = engine.property_ids()
+    assert prop_ids is not None
+    prop_id_list = [pid for pid in prop_ids]
+    assert len(prop_id_list) == len(all_property_labels)
+    prop_labels = index.property_labels_for(prop_id_list)
+    assert sorted([l for l in prop_labels]) == sorted(all_property_labels)
+
+  def test_property_ids_must_return_empty_sequence_for_empty_graph(self):
+    engine = self.create_new_kg().query_engine()
+    prop_ids = engine.property_ids()
+    assert prop_ids is not None
+    assert [pid for pid in prop_ids] == []
+
+  def test_e_out_must_raise_value_error_when_id_for_empty_graph(self):
+    engine = self.create_new_kg().query_engine()
+    with raises(ValueError):
+      next(iter(engine.e_out(self.get_unknown_node_id())))
+
+  def test_e_out_must_raise_value_error_when_id_unknown_for_graph(self):
+    engine = self.create_data_db().query_engine()
+    with raises(ValueError):
+      next(iter(engine.e_out(self.get_unknown_node_id())))
+
+  def test_e_out_must_return_outgoing_edges_when_id_known_for_graph(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    edges = engine.e_out(index.node_id_for('pokemon/jigglypuff'))
+    assert edges is not None
+    assert sorted([e for e in edges]) == sorted(
+        all_out_edges(index, 'pokemon/jigglypuff'))

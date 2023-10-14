@@ -39,6 +39,11 @@ all_node_labels = list({s for s, _, _ in test_data}
                        .union({o for _, _, o in test_data}))
 
 
+def all_edges(i):
+  return [(i.node_id_for(s), i.property_id_for(p), i.node_id_for(o))
+          for s, p, o in test_data]
+
+
 def all_out_edges(i, x):
   return list([(i.node_id_for(s), i.property_id_for(p),
                 i.node_id_for(o)) for s, p, o in test_data if s == x])
@@ -318,3 +323,32 @@ class GraphQueryTesting(GraphTesting):
     assert (index.property_id_for('inEggGroup'), 1) in dist_list
     assert (index.property_id_for('hasShape'), 1) in dist_list
     assert (index.property_id_for('foundIn'), 1) in dist_list
+
+  def test_edges_must_return_empty_list_when_empty_graph(self):
+    engine = self.create_new_kg().query_engine()
+    edges = engine.edges()
+    assert edges is not None
+    edge_list = [e for e in edges]
+    assert edge_list == []
+
+  def test_edges_must_return_empty_list_when_empty_graph_with_unknow_subj(self):
+    engine = self.create_new_kg().query_engine()
+    edges = engine.edges(subj_node=self.get_unknown_node_id())
+    assert edges is not None
+    edge_list = [e for e in edges]
+    assert edge_list == []
+
+  def test_edges_must_return_empty_list_when_empty_graph_with_unknow_pred(self):
+    engine = self.create_new_kg().query_engine()
+    edges = engine.edges(prop_type=self.get_unknown_property_id())
+    assert edges is not None
+    edge_list = [e for e in edges]
+    assert edge_list == []
+
+  def test_edges_must_return_all_edges_when_graph_with_no_filter(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    edges = engine.edges()
+    assert edges is not None
+    edge_list = [e for e in edges]
+    assert sorted(edge_list) == sorted(all_edges(index))

@@ -79,6 +79,7 @@ _FETCH_EDGES = '''
   WHERE (? IS NULL OR subj = ?) AND (? IS NULL OR pred =?)
          AND (? IS NULL OR obj = ?);
 '''
+_FETCH_ALL_EDGES = '''SELECT subj, pred, obj FROM statement;'''
 
 
 class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
@@ -188,14 +189,19 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
     finally:
       cursor.close()
 
-  def edges(self, *, subj_node: Union[int, None] = None,
-            property_type: Union[int, None] = None, obj_node:
-            Union[int, None] = None) -> Iterable[Tuple[int, int, int]]:
+  def edges(self, *,
+            subj_node: Union[int, None] = None,
+            prop_type: Union[int, None] = None,
+            obj_node: Union[int, None] = None) \
+          -> Generator[Tuple[int, int, int], None, None]:
     cursor = self._connection.cursor()
     try:
-      resp = cursor.execute(_FETCH_EDGES,
-                            [subj_node, subj_node, property_type, property_type,
-                             obj_node, obj_node])
+      if subj_node is None and prop_type is None and obj_node is None:
+        resp = cursor.execute(_FETCH_ALL_EDGES)
+      else:
+        resp = cursor.execute(_FETCH_EDGES, [subj_node, subj_node,
+                                             prop_type, prop_type,
+                                             obj_node, obj_node])
       while True:
         r = resp.fetchone()
         if r is None:

@@ -140,23 +140,29 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
     raise NotImplementedError()
 
   def edges(self, *, subj_node: Union[NodeID, None] = None,
-            property_type: Union[PropertyID, None] = None,
-            obj_node: Union[NodeID, None] = None) -> Iterable[Edge]:
+            prop_type: Union[PropertyID, None] = None,
+            obj_node: Union[NodeID, None] = None) \
+          -> Generator[Edge, None, None]:
     """Gets all the edges that match the given filter.
 
     Args:
-        subj_node: ID of the node on the subject position or `None`, if no
-        filter shall be applied on the subject.
-        property_type: ID of the property type or `None`, if no filter shall be
-        applied on the property type.
-        obj_node: ID of the node on the object position or `None`, if no
-        filter shall be applied on the object.
-    Returns:
-        An iterable sequence of all matching edges. This method must not
-        return `None` as a result, but an empty sequence, if no matching
-        edges could be found.
+        subj_node (Union[NodeID, None], optional): ID of the node on the subject
+        position or `None`, if no filter shall be applied on the subject.
+        Defaults to None.
+        prop_type (Union[PropertyID, None], optional): ID of the property
+        type or `None`, if no filter shall be applied on the property type.
+        Defaults to None.
+        obj_node (Union[NodeID, None], optional): ID of the node on the object
+        position or `None`, if no filter shall be applied on the object.
+        Defaults to None.
+
     Raises:
         IOError: An error occurred accessing the query engine.
+
+    Returns:
+        Generator[Edge, None, None]: An iterable sequence of all matching edges.
+        This method must not return `None` as a result, but an empty sequence,
+        if no matching edges could be found.
     """
     raise NotImplementedError()
 

@@ -41,11 +41,11 @@ _CREATE_STATEMENT_ID_SEQUENCE = '''
   CREATE SEQUENCE IF NOT EXISTS statement_id_seq START 1;
 '''
 _CREATE_META_TABLE = '''
-        CREATE TABLE IF NOT EXISTS meta (
-            key VARCHAR PRIMARY KEY,
-            value VARCHAR NOT NULL
-        );
-    '''
+  CREATE TABLE IF NOT EXISTS meta (
+    key VARCHAR PRIMARY KEY,
+    value VARCHAR NOT NULL
+  );
+'''
 _INSERT_NODE = '''
   INSERT INTO node (node_id, label) VALUES (nextval('resource_id_seq'), ?);
 '''
@@ -53,9 +53,9 @@ _INSERT_EDGE = '''
   INSERT INTO property (prop_id, label) VALUES (nextval('resource_id_seq'), ?);
 '''
 _INSERT_STATEMENT = '''
-        INSERT OR IGNORE INTO statement (no, subj, pred, obj)
-        VALUES (nextval('statement_id_seq'), ?, ?, ?);
-    '''
+  INSERT OR IGNORE INTO statement (no, subj, pred, obj)
+  VALUES (nextval('statement_id_seq'), ?, ?, ?);
+'''
 
 _GET_NODE_ID_FOR = '''SELECT node_id FROM node WHERE label = ?;'''
 _GET_PROPERTY_ID_FOR = '''SELECT prop_id FROM property WHERE label = ?;'''
@@ -63,14 +63,16 @@ _GET_NODE_LABEL_FOR = '''SELECT label FROM node WHERE node_id = ?;'''
 _GET_PROPERTY_LABEL_FOR = '''SELECT label FROM property WHERE prop_id = ?;'''
 _GET_PROPERTY_ID_FOR = '''SELECT prop_id FROM property WHERE label = ?;'''
 _FETCH_NODE_IDS = '''SELECT node_id FROM node;'''
+_FETCH_NODE_COUNT = '''SELECT count(*) FROM node;'''
 _FETCH_PROPERTY_TYPE_IDS = '''SELECT prop_id FROM property;'''
+_FETCH_PROPERTY_TYPE_COUNT = '''SELECT count(*) FROM property;'''
 _FETCH_OUT_HOPS = '''SELECT pred, obj FROM statement WHERE subj = ?;'''
 _FETCH_IN_HOPS = '''SELECT subj, pred FROM statement WHERE obj = ?;'''
 _FETCH_EDGES = '''
-        SELECT subj, pred, obj FROM statement
-        WHERE (? IS NULL OR subj = ?) AND (? IS NULL OR pred =?)
-            AND (? IS NULL OR obj = ?);
-    '''
+  SELECT subj, pred, obj FROM statement
+  WHERE (? IS NULL OR subj = ?) AND (? IS NULL OR pred =?)
+         AND (? IS NULL OR obj = ?);
+'''
 
 
 class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
@@ -98,6 +100,9 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
     finally:
       cursor.close()
 
+  def node_count(self) -> int:
+    return self._connection.sql(_FETCH_NODE_COUNT).fetchone()[0]
+
   def property_ids(self) -> Generator[int, None, None]:
     cursor = self._connection.cursor()
     try:
@@ -109,6 +114,9 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
         yield r[0]
     finally:
       cursor.close()
+
+  def property_type_count(self) -> int:
+    return self._connection.sql(_FETCH_PROPERTY_TYPE_COUNT).fetchone()[0]
 
   @lru_cache(maxsize=10_000)
   def _does_node_id_exist(self, node_id: int) -> bool:
@@ -160,16 +168,7 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
     finally:
       cursor.close()
 
-  def node_count(self) -> int:
-    pass
-
-  def property_type_count(self) -> int:
-    pass
-
-  def edge_count(self) -> int:
-    pass
-
-  def close(self) -> None:
+  def shutdown(self) -> None:
     if self._con is not None:
       self._con.close()
 

@@ -202,6 +202,14 @@ class GraphQueryTesting(GraphTesting):
     assert node_ids is not None
     assert [nid for nid in node_ids] == []
 
+  def test_node_count_must_return_0_when_empty_graph(self):
+    engine = self.create_new_kg().query_engine()
+    assert engine.node_count() == 0
+
+  def test_node_count_must_return_proper_count_when_complete_graph(self):
+    engine = self.create_data_db().query_engine()
+    assert engine.node_count() == len(all_node_labels)
+
   def test_property_ids_must_return_all_distinct_property_ids(self):
     engine = self.create_data_db().query_engine()
     index = self.create_data_db().index()
@@ -217,6 +225,14 @@ class GraphQueryTesting(GraphTesting):
     prop_ids = engine.property_ids()
     assert prop_ids is not None
     assert [pid for pid in prop_ids] == []
+
+  def test_property_type_count_must_return_0_when_empty_graph(self):
+    engine = self.create_new_kg().query_engine()
+    assert engine.property_type_count() == 0
+
+  def test_property_type_count_must_return_cor_count_when_complete_graph(self):
+    engine = self.create_data_db().query_engine()
+    assert engine.property_type_count() == len(all_property_labels)
 
   def test_e_out_must_raise_value_error_when_id_for_empty_graph(self):
     engine = self.create_new_kg().query_engine()

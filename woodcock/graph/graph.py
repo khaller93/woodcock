@@ -29,6 +29,17 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
     """
     raise NotImplementedError()
 
+  def node_count(self) -> int:
+    """Gets the number of distinct nodes in the graph.
+
+    Raises:
+        IOError: An error occurred accessing the query engine.
+
+    Returns:
+        int: The number of distinct nodes in the graph.
+    """
+    raise NotImplementedError()
+
   def property_ids(self) -> Generator[PropertyID, None, None]:
     """Gets all property type IDs in the graph without duplicates.
 
@@ -100,16 +111,6 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
     """
     raise NotImplementedError()
 
-  def node_count(self) -> int:
-    """Gets the number of distinct nodes in the graph.
-
-    Returns:
-        The number of distinct nodes in the graph.
-    Raises:
-        IOError: An error occurred accessing the query engine.
-    """
-    raise NotImplementedError()
-
   def property_type_count(self) -> int:
     """Gets the number of distinct property types in the graph.
 
@@ -130,9 +131,8 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
     """
     raise NotImplementedError()
 
-  def close(self) -> None:
-    """Closes connection to the query engine, frees up resources, or does
-    nothing."""
+  def shutdown(self) -> None:
+    """Shut the graph index down, and free up all resources."""
     pass
 
 

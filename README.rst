@@ -1,9 +1,8 @@
 Woodcock KG Corpora Generation
-===========================
+==============================
 
 .. image:: docs/graphics/woodcock.png
-    :width: 800
-    :align: center
+    :width: 400
     :alt: American Woodcock in a labyrinth pixel art (DALL-E)
 
 **Objective:** Enable the generation of corpora for embedding techniques like

@@ -82,6 +82,25 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
     """
     raise NotImplementedError()
 
+  def prop_in_dist(self, subj_node: NodeID) \
+          -> Generator[Tuple[PropertyID, int], None, None]:
+    """Gets the property distribution for the ingoing edges to the given
+    subject node.
+
+    Raises:
+        IOError: An error occurred accessing the query engine.
+        ValueError: If the subject node doesn't exist in the graph.
+
+    Args:
+        subj_node (NodeID): ID of the node for which the distribution shall be
+        returned.
+
+    Yields:
+        Generator[Tuple[PropertyID, int], None, None]: The property
+        distribution for the ingoing edges to the given subject node.
+    """
+    raise NotImplementedError()
+
   def e_out(self, subj_node: NodeID) -> Generator[Edge, None, None]:
     """Gets all outgoing edges for the given subject node.
 
@@ -98,6 +117,25 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
         The subject node will be on the subject position of these edges. For the
         node with the ID `ex:bob`, this would for example be:
         `[('ex:bob', 'foaf:knows', 'ex:ash')]`
+    """
+    raise NotImplementedError()
+
+  def prop_out_dist(self, subj_node: NodeID) \
+          -> Generator[Tuple[PropertyID, int], None, None]:
+    """Gets the property distribution for the outgoing edges to the given
+    subject node.
+
+    Raises:
+        IOError: An error occurred accessing the query engine.
+        ValueError: If the subject node doesn't exist in the graph.
+
+    Args:
+        subj_node (NodeID): ID of the node for which the distribution shall be
+        returned.
+
+    Yields:
+        Generator[Tuple[PropertyID, int], None, None]: The property
+        distribution for the outgoing edges to the given subject node.
     """
     raise NotImplementedError()
 

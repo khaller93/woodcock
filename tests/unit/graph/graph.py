@@ -249,13 +249,32 @@ class GraphQueryTesting(GraphTesting):
     with raises(ValueError):
       next(iter(engine.e_in(self.get_unknown_node_id())))
 
-  def test_e_in_must_return_outgoing_edges_when_id_known_for_graph(self):
+  def test_e_in_must_return_ingoing_edges_when_id_known_for_graph(self):
     engine = self.create_data_db().query_engine()
     index = self.create_data_db().index()
     edges = engine.e_in(index.node_id_for('PokéType:Normal'))
     assert edges is not None
     assert sorted([e for e in edges]) == sorted(
         all_in_edges(index, 'PokéType:Normal'))
+
+  def test_prop_in_dist_must_raise_value_error_when_id_for_empty_graph(self):
+    engine = self.create_new_kg().query_engine()
+    with raises(ValueError):
+      next(iter(engine.prop_in_dist(self.get_unknown_node_id())))
+
+  def test_prop_in_dist_must_raise_value_error_when_id_unknown_for_graph(self):
+    engine = self.create_data_db().query_engine()
+    with raises(ValueError):
+      next(iter(engine.prop_in_dist(self.get_unknown_node_id())))
+
+  def test_prop_in_dist_must_return_prop_dist_when_id_known_for_graph(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    dist = engine.prop_in_dist(index.node_id_for('PokéType:Normal'))
+    assert dist is not None
+    dist_list = [e for e in dist]
+    assert len(dist_list) == 1
+    assert dist_list[0] == (index.property_id_for('hasType'), 3)
 
   def test_e_out_must_raise_value_error_when_id_for_empty_graph(self):
     engine = self.create_new_kg().query_engine()
@@ -274,3 +293,28 @@ class GraphQueryTesting(GraphTesting):
     assert edges is not None
     assert sorted([e for e in edges]) == sorted(
         all_out_edges(index, 'pokemon/jigglypuff'))
+
+  def test_prop_out_dist_must_raise_value_error_when_id_for_empty_graph(self):
+    engine = self.create_new_kg().query_engine()
+    with raises(ValueError):
+      next(iter(engine.prop_out_dist(self.get_unknown_node_id())))
+
+  def test_prop_out_dist_must_raise_value_error_when_id_unknown_for_graph(self):
+    engine = self.create_data_db().query_engine()
+    with raises(ValueError):
+      next(iter(engine.prop_out_dist(self.get_unknown_node_id())))
+
+  def test_prop_out_dist_must_return_prop_dist_when_id_known_for_graph(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    dist = engine.prop_out_dist(index.node_id_for('pokemon/meowth'))
+    assert dist is not None
+    dist_list = [e for e in dist]
+    assert len(dist_list) == 7
+    assert (index.property_id_for('isAbleToApply'), 7) in dist_list
+    assert (index.property_id_for('hasType'), 3) in dist_list
+    assert (index.property_id_for('mayHaveAbility'), 3) in dist_list
+    assert (index.property_id_for('mayHaveHiddenAbility'), 1) in dist_list
+    assert (index.property_id_for('inEggGroup'), 1) in dist_list
+    assert (index.property_id_for('hasShape'), 1) in dist_list
+    assert (index.property_id_for('foundIn'), 1) in dist_list

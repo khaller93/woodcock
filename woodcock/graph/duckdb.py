@@ -67,7 +67,13 @@ _FETCH_NODE_COUNT = '''SELECT count(*) FROM node;'''
 _FETCH_PROPERTY_TYPE_IDS = '''SELECT prop_id FROM property;'''
 _FETCH_PROPERTY_TYPE_COUNT = '''SELECT count(*) FROM property;'''
 _FETCH_OUT_HOPS = '''SELECT pred, obj FROM statement WHERE subj = ?;'''
+_FETCH_OUT_DIST = '''
+SELECT pred, COUNT(*) FROM statement WHERE subj = ? GROUP BY pred;
+'''
 _FETCH_IN_HOPS = '''SELECT subj, pred FROM statement WHERE obj = ?;'''
+_FETCH_IN_DIST = '''
+SELECT pred, COUNT(*) FROM statement WHERE obj = ? GROUP BY pred;
+'''
 _FETCH_EDGES = '''
   SELECT subj, pred, obj FROM statement
   WHERE (? IS NULL OR subj = ?) AND (? IS NULL OR pred =?)
@@ -137,6 +143,21 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
     finally:
       cursor.close()
 
+  def prop_in_dist(self, subj_node: int) \
+          -> Generator[Tuple[int, int], None, None]:
+    if not self._does_node_id_exist(subj_node):
+      raise ValueError(f'node with ID "{subj_node}" doesn\'t exist in db')
+    cursor = self._connection.cursor()
+    try:
+      resp = cursor.execute(_FETCH_IN_DIST, [subj_node])
+      while True:
+        r = resp.fetchone()
+        if r is None:
+          break
+        yield r[0], r[1]
+    finally:
+      cursor.close()
+
   def e_out(self, subj_node: int) \
           -> Generator[Tuple[int, int, int], None, None]:
     if not self._does_node_id_exist(subj_node):
@@ -149,6 +170,21 @@ class _DuckDBGraphQueryEngine(GraphQueryEngine[int, int]):
         if r is None:
           break
         yield subj_node, r[0], r[1]
+    finally:
+      cursor.close()
+
+  def prop_out_dist(self, subj_node: int) \
+          -> Generator[Tuple[int, int], None, None]:
+    if not self._does_node_id_exist(subj_node):
+      raise ValueError(f'node with ID "{subj_node}" doesn\'t exist in db')
+    cursor = self._connection.cursor()
+    try:
+      resp = cursor.execute(_FETCH_OUT_DIST, [subj_node])
+      while True:
+        r = resp.fetchone()
+        if r is None:
+          break
+        yield r[0], r[1]
     finally:
       cursor.close()
 

@@ -351,3 +351,29 @@ class GraphQueryTesting(GraphTesting):
     assert edges is not None
     edge_list = [e for e in edges]
     assert sorted(edge_list) == sorted(all_edges(index, subj='pokemon/eevee'))
+
+  def test_edges_must_return_edges_normal_type_when_graph_with_obj_filter(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    edges = engine.edges(obj_node=index.node_id_for('PokéType:Normal'))
+    assert edges is not None
+    edge_list = [e for e in edges]
+    assert sorted(edge_list) == sorted(all_edges(index, obj='PokéType:Normal'))
+
+  def test_edges_must_return_edges_ability_when_graph_with_pred_filter(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    edges = engine.edges(prop_type=index.property_id_for('isAbleToApply'))
+    assert edges is not None
+    edge_list = [e for e in edges]
+    assert sorted(edge_list) == sorted(all_edges(index, pred='isAbleToApply'))
+
+  def test_edges_must_return_edges_eevee_shape_when_multi_filter(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    edges = engine.edges(subj_node=index.node_id_for('pokemon/eevee'),
+                         prop_type=index.property_id_for('hasShape'))
+    assert edges is not None
+    edge_list = [e for e in edges]
+    assert sorted(edge_list) == sorted(all_edges(index, pred='hasShape',
+                                                 subj='pokemon/eevee'))

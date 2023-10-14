@@ -39,19 +39,10 @@ all_node_labels = list({s for s, _, _ in test_data}
                        .union({o for _, _, o in test_data}))
 
 
-def all_edges(i):
+def all_edges(i, *, subj=None, pred=None, obj=None):
   return [(i.node_id_for(s), i.property_id_for(p), i.node_id_for(o))
-          for s, p, o in test_data]
-
-
-def all_out_edges(i, x):
-  return list([(i.node_id_for(s), i.property_id_for(p),
-                i.node_id_for(o)) for s, p, o in test_data if s == x])
-
-
-def all_in_edges(i, x):
-  return list([(i.node_id_for(s), i.property_id_for(p),
-                i.node_id_for(o)) for s, p, o in test_data if o == x])
+          for s, p, o in test_data if (subj is None or subj == s) and
+          (pred is None or pred == p) and (obj is None or obj == o)]
 
 
 all_property_labels = list({p for _, p, _ in test_data})
@@ -260,7 +251,7 @@ class GraphQueryTesting(GraphTesting):
     edges = engine.e_in(index.node_id_for('PokéType:Normal'))
     assert edges is not None
     assert sorted([e for e in edges]) == sorted(
-        all_in_edges(index, 'PokéType:Normal'))
+        all_edges(index, obj='PokéType:Normal'))
 
   def test_prop_in_dist_must_raise_value_error_when_id_for_empty_graph(self):
     engine = self.create_new_kg().query_engine()
@@ -297,7 +288,7 @@ class GraphQueryTesting(GraphTesting):
     edges = engine.e_out(index.node_id_for('pokemon/jigglypuff'))
     assert edges is not None
     assert sorted([e for e in edges]) == sorted(
-        all_out_edges(index, 'pokemon/jigglypuff'))
+        all_edges(index, subj='pokemon/jigglypuff'))
 
   def test_prop_out_dist_must_raise_value_error_when_id_for_empty_graph(self):
     engine = self.create_new_kg().query_engine()
@@ -352,3 +343,11 @@ class GraphQueryTesting(GraphTesting):
     assert edges is not None
     edge_list = [e for e in edges]
     assert sorted(edge_list) == sorted(all_edges(index))
+
+  def test_edges_must_return_edges_for_eevee_when_graph_with_subj_filter(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    edges = engine.edges(subj_node=index.node_id_for('pokemon/eevee'))
+    assert edges is not None
+    edge_list = [e for e in edges]
+    assert sorted(edge_list) == sorted(all_edges(index, subj='pokemon/eevee'))

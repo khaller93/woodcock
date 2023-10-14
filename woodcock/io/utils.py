@@ -71,7 +71,7 @@ class _CompressedFile:
       self._f.close()
 
 
-def copen(fp: FilePath, mode: str = 'text', *, compression: Compression,
+def copen(fp: FilePath, *, mode: str = 'text', compression: Compression = None,
           encoding: str = None) -> '_CompressedFile':
   """Opens the given file in a specified mode (`text` or `bytes`).
 

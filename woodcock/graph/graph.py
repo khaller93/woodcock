@@ -1,4 +1,4 @@
-"""This module defines abstract classes for a knowledge graph, which could
+"""This module defines interfaces for a knowledge graph, which could
 theoretically exist in any storage solution.
 
 A `Graph` is a simple knowledge graph, which has a `GraphIndex` and a
@@ -163,16 +163,6 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
         Generator[Edge, None, None]: An iterable sequence of all matching edges.
         This method must not return `None` as a result, but an empty sequence,
         if no matching edges could be found.
-    """
-    raise NotImplementedError()
-
-  def edge_count(self) -> int:
-    """Gets the total number of edges in the graph.
-
-    Returns:
-        The number of total edges in the graph.
-    Raises:
-        IOError: An error occurred accessing the query engine.
     """
     raise NotImplementedError()
 
@@ -367,6 +357,10 @@ class Graph(Generic[NodeLabel, NodeID, PropertyLabel, PropertyID]):
         A serializable query engine for this graph.
     """
     raise NotImplementedError()
+
+  def shutdown(self) -> None:
+    """Shut the graph index down, and free up all resources."""
+    pass
 
 
 _ExtEdge = Tuple[NodeLabel, PropertyLabel, NodeLabel]

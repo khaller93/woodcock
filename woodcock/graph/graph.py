@@ -52,6 +52,17 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
     """
     raise NotImplementedError()
 
+  def property_type_count(self) -> int:
+    """Gets the number of distinct property types in the graph.
+
+    Raises:
+        IOError: An error occurred accessing the query engine.
+
+    Returns:
+        int: The number of distinct property types in the graph.
+    """
+    raise NotImplementedError()
+
   def e_in(self, subj_node: NodeID) -> Generator[Edge, None, None]:
     """Gets all ingoing edges for the given subject node.
 
@@ -106,16 +117,6 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
         An iterable sequence of all matching edges. This method must not
         return `None` as a result, but an empty sequence, if no matching
         edges could be found.
-    Raises:
-        IOError: An error occurred accessing the query engine.
-    """
-    raise NotImplementedError()
-
-  def property_type_count(self) -> int:
-    """Gets the number of distinct property types in the graph.
-
-    Returns:
-        The number of distinct property types in the graph.
     Raises:
         IOError: An error occurred accessing the query engine.
     """

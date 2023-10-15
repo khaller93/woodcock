@@ -237,7 +237,7 @@ class AbstractSQLDBQueryEngine(GraphQueryEngine[int, int]):
   def _does_node_id_exist(self, node_id: int) -> bool:
     cursor = self._connection.cursor()
     try:
-      cursor.execute('', (node_id,))
+      cursor.execute(self._q.read.node_id_exist, (node_id,))
       return bool(cursor.fetchone())
     finally:
       cursor.close()

@@ -42,7 +42,6 @@ class PostgreSQLDatabaseDialect(DatabaseDialect):
   def insert_ignore_command(self, statement_name: str,
                             column_names: Sequence[str],
                             value_types: Sequence[type]) -> str:
-
     columns = ', '.join(column_names)
     values = ', '.join('%s' for _ in value_types)
     return f'''
@@ -53,54 +52,6 @@ class PostgreSQLDatabaseDialect(DatabaseDialect):
   def var_sub(self, query: str, variables: Mapping[str, type]) -> str:
     variables = {k: '%s' for k, _ in variables.items()}
     return query % variables
-
-
-class PostgreSQLRead():
-  """Specification of SQLRead for PostgreSQL."""
-
-  @property
-  def get_node_id(self) -> str:
-    return '''SELECT node_id FROM node WHERE label = %s;'''
-
-  @property
-  def get_node_label(self) -> str:
-    return '''SELECT label FROM node WHERE node_id = %s;'''
-
-  @property
-  def get_property_id(self) -> str:
-    return '''SELECT prop_id FROM property WHERE label = %s;'''
-
-  @property
-  def get_property_label(self) -> str:
-    return '''SELECT label FROM property WHERE prop_id = %s;'''
-
-  @property
-  def get_out_edges(self) -> str:
-    return '''SELECT pred, obj FROM statement WHERE subj = %s;'''
-
-  @property
-  def get_prop_out_dist(self) -> str:
-    return '''
-SELECT pred, COUNT(*) FROM statement WHERE subj = %s GROUP BY pred;
-'''
-
-  @property
-  def get_in_edges(self) -> str:
-    return '''SELECT subj, pred FROM statement WHERE obj = %s;'''
-
-  @property
-  def get_prop_in_dist(self) -> str:
-    return '''
-SELECT pred, COUNT(*) FROM statement WHERE obj = %s GROUP BY pred;
-'''
-
-  @property
-  def get_edges_search(self) -> str:
-    return '''
-  SELECT subj, pred, obj FROM statement
-  WHERE (%s IS NULL OR subj = %s) AND (%s IS NULL OR pred = %s)
-         AND (%s IS NULL OR obj = %s);
-'''
 
 
 class _PostgreSQLGraphEngine(AbstractSQLDBQueryEngine):

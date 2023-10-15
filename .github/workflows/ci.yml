@@ -14,10 +14,8 @@ jobs:
         matrix:
           python-version: ["3.8", "3.9", "3.10", "3.11"]
           poetry-version: ["1.6.1"]
-          os: [ubuntu-22.04, macos-latest, windows-latest]
-          exclude:
-          # service not working with these operating systems
-            - os: macos-latest, windows-latest 
+          os: [ubuntu-22.04] # service not working with [macos-latest, windows-latest]
+
       runs-on: ${{ matrix.os }}
       
       services:

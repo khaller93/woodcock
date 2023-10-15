@@ -6,6 +6,6 @@ services:
     image: postgres:11.21-bullseye
     restart: always
     environment:
-      POSTGRES_PASSWORD: T?N2DNaiuzQFdX<k+nbg47YJ
+      POSTGRES_PASSWORD: postgres
     ports:
       - 5432:5432

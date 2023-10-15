@@ -6,6 +6,7 @@ authors = ["Kevin Haller <contact@kevinhaller.dev>"]
 readme = "README.rst"
 
 [tool.poetry.dependencies]
+psycopg = "^3.1"
 python = "^3.8"
 
 [tool.poetry.group.dev.dependencies]

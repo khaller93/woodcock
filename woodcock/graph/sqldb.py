@@ -2,37 +2,82 @@
 database."""
 
 from functools import lru_cache
-from typing import Iterable, Tuple, Generator, Union
+from typing import Iterable, Tuple, Generator, Union, Sequence, Mapping
 
 from woodcock.graph.graph import EmbeddedGraph, GraphIndex, GraphQueryEngine
 
 
-class SQLWrite:
-  """Specification of the SQL write commands."""
+class DatabaseDialect:
+  """Dialect of the database."""
 
-  @property
-  def node_table_creation(self) -> str:
-    return '''
+  def primary_key_row(self, name: str) -> str:
+    """Generated a primary key row for the particular database.
+
+    Args:
+        name (str): name of the primary key column.
+
+    Returns:
+        str: a primary key row for the particular database.
+    """
+    raise NotImplementedError()
+
+  def insert_ignore_command(self, statement_name: str,
+                            column_names: Sequence[str],
+                            value_types: Sequence[type]) -> str:
+    """Generates an INSERT SQL command, which ignores the insert if the
+    unique constraint is violated.
+
+    Args:
+        statement_name (str): name of the table into which values shall be
+        inserted.
+        column_names (Sequence[str]): the names of the columns in the row.
+        value_types (Sequence[type]): the types of the column values.
+
+    Returns:
+        str: gets the INSERT operation query, which quietly ignores a failed
+        insert.
+    """
+    raise NotImplementedError()
+
+  def var_sub(self, query: str, variables: Mapping[str, type]) -> str:
+    """_summary_
+
+    Args:
+        query (str): _description_
+        variables (Mapping[str, type]): _description_
+
+    Returns:
+        str: _description_
+    """
+    raise NotImplementedError()
+
+
+class SQLWriteCommands:
+  """SQL write commands considering the given dialect."""
+
+  def __init__(self, dialect: DatabaseDialect) -> None:
+    if not dialect:
+      raise ValueError('you must specify the database dialect')
+    self._query: Mapping[str, str] = self._setup(dialect)
+
+  @staticmethod
+  def _setup(dialect: DatabaseDialect) -> Mapping[str, str]:
+    query: Mapping[str, str] = {}
+    query['node_table_creation'] = f'''
   CREATE TABLE IF NOT EXISTS node (
-    node_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    {dialect.primary_key_row('node_id')},
     label VARCHAR NOT NULL UNIQUE
   );
 '''
-
-  @property
-  def edge_table_creation(self) -> str:
-    return '''
+    query['edge_table_creation'] = f'''
   CREATE TABLE IF NOT EXISTS property (
-    prop_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    {dialect.primary_key_row('prop_id')},
     label VARCHAR NOT NULL UNIQUE
   );
 '''
-
-  @property
-  def statement_table_creation(self) -> str:
-    return '''
+    query['statement_table_creation'] = f'''
   CREATE TABLE IF NOT EXISTS statement (
-    no INTEGER PRIMARY KEY AUTOINCREMENT,
+    {dialect.primary_key_row('no')},
     subj INTEGER NOT NULL,
     pred INTEGER NOT NULL,
     obj INTEGER NOT NULL,
@@ -42,92 +87,95 @@ class SQLWrite:
     UNIQUE(subj, pred, obj)
   );
 '''
+    query['insert_node'] = dialect.insert_ignore_command('node',
+                                                         ['label'], [str])
+    query['insert_property'] = dialect.insert_ignore_command('property',
+                                                             ['label'], [str])
+    query['insert_statement'] = dialect.insert_ignore_command('statement',
+                                                              ['subj', 'pred',
+                                                               'obj'],
+                                                              [int, int, int])
+    return query
 
-  @property
-  def insert_node(self) -> str:
-    return '''
-  INSERT OR IGNORE INTO node (label) VALUES (?);
-'''
-
-  @property
-  def insert_property(self) -> str:
-    return '''
-  INSERT OR IGNORE INTO property (label) VALUES (?);
-'''
-
-  @property
-  def insert_statement(self) -> str:
-    return '''
-  INSERT OR IGNORE INTO statement (subj, pred, obj) VALUES (?, ?, ?);
-'''
+  def __getattr__(self, name):
+    val = self._query.get(name)
+    if val is None:
+      raise AttributeError(f'{name} couldn\'t be found')
+    return val
 
 
-class SQLRead:
-  """Specification of the SQL read commands."""
+class SQLReadCommands:
+  """SQL reader commands considering the given dialect."""
 
-  @property
-  def get_node_id(self) -> str:
-    return '''SELECT node_id FROM node WHERE label = ?;'''
+  def __init__(self, dialect: DatabaseDialect) -> None:
+    if not dialect:
+      raise ValueError('you must specify the database dialect')
+    self._query: Mapping[str, str] = self._setup(dialect)
 
-  @property
-  def get_node_ids(self) -> str:
-    return '''SELECT node_id FROM node;'''
-
-  @property
-  def get_node_count(self) -> str:
-    return '''SELECT count(*) FROM node;'''
-
-  @property
-  def get_node_label(self) -> str:
-    return '''SELECT label FROM node WHERE node_id = ?;'''
-
-  @property
-  def get_property_id(self) -> str:
-    return '''SELECT prop_id FROM property WHERE label = ?;'''
-
-  @property
-  def get_property_ids(self) -> str:
-    return '''SELECT prop_id FROM property;'''
-
-  @property
-  def get_property_count(self) -> str:
-    return '''SELECT count(*) FROM property;'''
-
-  @property
-  def get_property_label(self) -> str:
-    return '''SELECT label FROM property WHERE prop_id = ?;'''
-
-  @property
-  def get_out_edges(self) -> str:
-    return '''SELECT pred, obj FROM statement WHERE subj = ?;'''
-
-  @property
-  def get_prop_out_dist(self) -> str:
-    return '''
-SELECT pred, COUNT(*) FROM statement WHERE subj = ? GROUP BY pred;
-'''
-
-  @property
-  def get_in_edges(self) -> str:
-    return '''SELECT subj, pred FROM statement WHERE obj = ?;'''
-
-  @property
-  def get_prop_in_dist(self) -> str:
-    return '''
-SELECT pred, COUNT(*) FROM statement WHERE obj = ? GROUP BY pred;
-'''
-
-  @property
-  def get_edges_search(self) -> str:
-    return '''
+  @staticmethod
+  def _setup(dialect: DatabaseDialect) -> Mapping[str, str]:
+    query: Mapping[str, str] = {}
+    query['get_node_id'] = dialect.var_sub('''
+  SELECT node_id FROM node WHERE label = %(label)s;
+''', {'label': str})
+    query['get_node_ids'] = 'SELECT node_id FROM node;'
+    query['get_node_count'] = 'SELECT count(*) FROM node;'
+    query['get_node_label'] = dialect.var_sub('''
+  SELECT label FROM node WHERE node_id = %(id)s;
+''', {'id': int})
+    query['node_id_exist'] = dialect.var_sub('''
+  SELECT 1 FROM node WHERE node_id = %(id)s;
+''', {'id': int})
+    query['get_property_id'] = dialect.var_sub('''
+  SELECT prop_id FROM property WHERE label = %(label)s;
+''', {'label': str})
+    query['get_property_ids'] = 'SELECT prop_id FROM property;'
+    query['get_property_count'] = 'SELECT count(*) FROM property;'
+    query['get_property_label'] = dialect.var_sub('''
+  SELECT label FROM property WHERE prop_id = %(id)s;
+''', {'id': int})
+    query['get_out_edges'] = dialect.var_sub('''
+  SELECT pred, obj FROM statement WHERE subj = %(id)s;
+''', {'id': int})
+    query['get_prop_out_dist'] = dialect.var_sub('''
+  SELECT pred, COUNT(*) FROM statement WHERE subj = %(id)s
+  GROUP BY pred;
+''', {'id': int})
+    query['get_in_edges'] = dialect.var_sub('''
+  SELECT subj, pred FROM statement WHERE obj = %(id)s;
+''', {'id': int})
+    query['get_prop_in_dist'] = dialect.var_sub('''
+  SELECT pred, COUNT(*) FROM statement WHERE obj = %(id)s
+  GROUP BY pred;
+''', {'id': int})
+    query['get_edges_search'] = dialect.var_sub('''
   SELECT subj, pred, obj FROM statement
-  WHERE (? IS NULL OR subj = ?) AND (? IS NULL OR pred =?)
-         AND (? IS NULL OR obj = ?);
-'''
+    WHERE (%(id)s IS NULL OR subj = %(id)s)
+      AND (%(id)s IS NULL OR pred = %(id)s)
+      AND (%(id)s IS NULL OR obj = %(id)s);
+''', {'id': int})
+    return query
+
+  def __getattr__(self, name):
+    val = self._query.get(name)
+    if val is None:
+      raise AttributeError(f'{name} couldn\'t be found')
+    return val
 
   @property
   def get_all_edges(self) -> str:
     return '''SELECT subj, pred, obj FROM statement;'''
+
+
+class SQLCommands:
+  """SQL commands considering the given dialect."""
+
+  def __init__(self, dialect: DatabaseDialect) -> None:
+    if not dialect:
+      raise ValueError('you must specify the database dialect')
+    self.dialect = dialect
+    self.read = SQLReadCommands(self.dialect)
+    self.write = SQLWriteCommands(self.dialect)
 
 
 class AbstractSQLDBQueryEngine(GraphQueryEngine[int, int]):
@@ -137,10 +185,10 @@ class AbstractSQLDBQueryEngine(GraphQueryEngine[int, int]):
       reader (SQLRead): the SQL reader specification used to query the database.
   """
 
-  def __init__(self, reader: SQLRead) -> None:
-    if reader is None:
-      raise ValueError('the SQL reader specification must be specified')
-    self._reader = reader
+  def __init__(self, dialect: DatabaseDialect) -> None:
+    if dialect is None:
+      raise ValueError('the SQL dialect specification must be given')
+    self._q = SQLCommands(dialect)
     self._con = None
 
   @property
@@ -150,9 +198,9 @@ class AbstractSQLDBQueryEngine(GraphQueryEngine[int, int]):
   def node_ids(self) -> Generator[int, None, None]:
     cursor = self._connection.cursor()
     try:
-      resp = cursor.execute(self._reader.get_node_ids)
+      cursor.execute(self._q.read.get_node_ids)
       while True:
-        r = resp.fetchone()
+        r = cursor.fetchone()
         if r is None:
           break
         yield r[0]
@@ -160,14 +208,18 @@ class AbstractSQLDBQueryEngine(GraphQueryEngine[int, int]):
       cursor.close()
 
   def node_count(self) -> int:
-    return self._connection.execute(self._reader.get_node_count).fetchone()[0]
+    cursor = self._connection.cursor()
+    try:
+      return cursor.execute(self._q.read.get_node_count).fetchone()[0]
+    finally:
+      cursor.close()
 
   def property_ids(self) -> Generator[int, None, None]:
     cursor = self._connection.cursor()
     try:
-      resp = cursor.execute(self._reader.get_property_ids)
+      cursor.execute(self._q.read.get_property_ids)
       while True:
-        r = resp.fetchone()
+        r = cursor.fetchone()
         if r is None:
           break
         yield r[0]
@@ -175,15 +227,18 @@ class AbstractSQLDBQueryEngine(GraphQueryEngine[int, int]):
       cursor.close()
 
   def property_type_count(self) -> int:
-    return self._connection.execute(self._reader.get_property_count) \
-        .fetchone()[0]
+    cursor = self._connection.cursor()
+    try:
+      cursor.execute(self._q.read.get_property_count)
+      return cursor.fetchone()[0]
+    finally:
+      cursor.close()
 
-  @lru_cache(maxsize=10_000)
   def _does_node_id_exist(self, node_id: int) -> bool:
     cursor = self._connection.cursor()
     try:
-      return bool(cursor.execute('SELECT 1 FROM node WHERE node_id = ?;',
-                                 [node_id]).fetchone())
+      cursor.execute('', (node_id,))
+      return bool(cursor.fetchone())
     finally:
       cursor.close()
 
@@ -192,9 +247,9 @@ class AbstractSQLDBQueryEngine(GraphQueryEngine[int, int]):
       raise ValueError(f'node with ID "{subj_node}" doesn\'t exist in db')
     cursor = self._connection.cursor()
     try:
-      resp = cursor.execute(self._reader.get_in_edges, [subj_node])
+      cursor.execute(self._q.read.get_in_edges, [subj_node])
       while True:
-        r = resp.fetchone()
+        r = cursor.fetchone()
         if r is None:
           break
         yield r[0], r[1], subj_node
@@ -207,9 +262,9 @@ class AbstractSQLDBQueryEngine(GraphQueryEngine[int, int]):
       raise ValueError(f'node with ID "{subj_node}" doesn\'t exist in db')
     cursor = self._connection.cursor()
     try:
-      resp = cursor.execute(self._reader.get_prop_in_dist, [subj_node])
+      cursor.execute(self._q.read.get_prop_in_dist, [subj_node])
       while True:
-        r = resp.fetchone()
+        r = cursor.fetchone()
         if r is None:
           break
         yield r[0], r[1]
@@ -222,9 +277,9 @@ class AbstractSQLDBQueryEngine(GraphQueryEngine[int, int]):
       raise ValueError(f'node with ID "{subj_node}" doesn\'t exist in db')
     cursor = self._connection.cursor()
     try:
-      resp = cursor.execute(self._reader.get_out_edges, [subj_node])
+      cursor.execute(self._q.read.get_out_edges, [subj_node])
       while True:
-        r = resp.fetchone()
+        r = cursor.fetchone()
         if r is None:
           break
         yield subj_node, r[0], r[1]
@@ -237,9 +292,9 @@ class AbstractSQLDBQueryEngine(GraphQueryEngine[int, int]):
       raise ValueError(f'node with ID "{subj_node}" doesn\'t exist in db')
     cursor = self._connection.cursor()
     try:
-      resp = cursor.execute(self._reader.get_prop_out_dist, [subj_node])
+      cursor.execute(self._q.read.get_prop_out_dist, [subj_node])
       while True:
-        r = resp.fetchone()
+        r = cursor.fetchone()
         if r is None:
           break
         yield r[0], r[1]
@@ -254,14 +309,14 @@ class AbstractSQLDBQueryEngine(GraphQueryEngine[int, int]):
     cursor = self._connection.cursor()
     try:
       if subj_node is None and prop_type is None and obj_node is None:
-        resp = cursor.execute(self._reader.get_all_edges)
+        cursor.execute(self._q.read.get_all_edges)
       else:
-        resp = cursor.execute(self._reader.get_edges_search,
-                              [subj_node, subj_node,
-                               prop_type, prop_type,
-                               obj_node, obj_node])
+        cursor.execute(self._q.read.get_edges_search,
+                       [subj_node, subj_node,
+                        prop_type, prop_type,
+                        obj_node, obj_node])
       while True:
-        r = resp.fetchone()
+        r = cursor.fetchone()
         if r is None:
           break
         yield r[0], r[1], r[2]
@@ -280,10 +335,10 @@ class AbstractSQLDBIndex(GraphIndex[str, int, str, int]):
       reader (SQLRead): the SQL reader specification used to query the database.
   """
 
-  def __init__(self, reader: SQLRead) -> None:
-    if reader is None:
+  def __init__(self, dialect: DatabaseDialect) -> None:
+    if dialect is None:
       raise ValueError('the SQL reader config must be specified')
-    self._reader = reader
+    self._q = SQLCommands(dialect)
     self._con = None
 
   @property
@@ -295,7 +350,8 @@ class AbstractSQLDBIndex(GraphIndex[str, int, str, int]):
     cursor = self._connection.cursor()
     try:
       for label in node_labels:
-        r = cursor.execute(self._reader.get_node_id, [label]).fetchone()
+        cursor.execute(self._q.read.get_node_id, [label])
+        r = cursor.fetchone()
         if r is None:
           raise ValueError(f'the node label "{r}" isn\'t in the db')
         yield r[0]
@@ -307,7 +363,8 @@ class AbstractSQLDBIndex(GraphIndex[str, int, str, int]):
     cursor = self._connection.cursor()
     try:
       for node_id in node_ids:
-        r = cursor.execute(self._reader.get_node_label, [node_id]).fetchone()
+        cursor.execute(self._q.read.get_node_label, [node_id])
+        r = cursor.fetchone()
         if r is None:
           raise ValueError(f'the node ID "{r}" isn\'t in the db')
         yield r[0]
@@ -319,7 +376,8 @@ class AbstractSQLDBIndex(GraphIndex[str, int, str, int]):
     cursor = self._connection.cursor()
     try:
       for label in property_labels:
-        r = cursor.execute(self._reader.get_property_id, [label]).fetchone()
+        cursor.execute(self._q.read.get_property_id, [label])
+        r = cursor.fetchone()
         if r is None:
           raise ValueError(f'the property label "{r}" isn\'t in the db')
         yield r[0]
@@ -331,8 +389,9 @@ class AbstractSQLDBIndex(GraphIndex[str, int, str, int]):
     cursor = self._connection.cursor()
     try:
       for prop_id in property_ids:
-        r = cursor.execute(self._reader.get_property_label,
-                           [prop_id]).fetchone()
+        cursor.execute(self._q.read.get_property_label,
+                       [prop_id])
+        r = cursor.fetchone()
         if r is None:
           raise ValueError(f'the property ID "{r}" isn\'t in the db')
         yield r[0]
@@ -348,19 +407,15 @@ class AbstractSQLDB(EmbeddedGraph[str, int, str, int]):
   """An abstract implementation of `EmbeddedGraph` using any SQL database.
 
   Args:
-      reader (SQLRead): the SQL reader specification used to query the database.
-      writer (SQLRead): the SQL writer specification used to import data into
-      the database.
+      dialect (DatabaseDialect): specification of the database dialect. It must
+      not be None.
   """
 
-  def __init__(self, writer: SQLWrite, reader: SQLRead) -> None:
+  def __init__(self, dialect: DatabaseDialect) -> None:
     super().__init__()
-    if writer is None:
-      raise ValueError('the SQL writer specification must be specified')
-    if reader is None:
-      raise ValueError('the SQL reader specification must be specified')
-    self._writer = writer
-    self._reader = reader
+    if not dialect:
+      raise ValueError('the SQL dialect specification must be given')
+    self._q = SQLCommands(dialect)
     self._con = None
     self._create_schema_if_not_exist()
 
@@ -392,9 +447,9 @@ class AbstractSQLDB(EmbeddedGraph[str, int, str, int]):
     cursor = self._connection.cursor()
     try:
       self._pre_table_schema_creation(cursor)
-      cursor.execute(self._writer.node_table_creation)
-      cursor.execute(self._writer.edge_table_creation)
-      cursor.execute(self._writer.statement_table_creation)
+      cursor.execute(self._q.write.node_table_creation)
+      cursor.execute(self._q.write.edge_table_creation)
+      cursor.execute(self._q.write.statement_table_creation)
       self._connection.commit()
       self._post_table_schema_creation(cursor)
     finally:
@@ -406,17 +461,17 @@ class AbstractSQLDB(EmbeddedGraph[str, int, str, int]):
 
       @lru_cache(maxsize=100_000)
       def insert_and_get_id(label: str, is_prop: bool = False) -> int:
-        cursor.execute(self._writer.insert_property if is_prop
-                       else self._writer.insert_node, [label])
-        return cursor.execute(self._reader.get_property_id if is_prop
-                              else self._reader.get_node_id,
-                              [label]).fetchone()[0]
+        cursor.execute(self._q.write.insert_property if is_prop
+                       else self._q.write.insert_node, (label,))
+        cursor.execute(self._q.read.get_property_id if is_prop
+                       else self._q.read.get_node_id, (label,))
+        return cursor.fetchone()[0]
 
       for stmt in data:
         subj = insert_and_get_id(stmt[0])
         pred = insert_and_get_id(stmt[1], is_prop=True)
         obj = insert_and_get_id(stmt[2])
-        cursor.execute(self._writer.insert_statement, [subj, pred, obj])
+        cursor.execute(self._q.write.insert_statement, (subj, pred, obj))
       self._connection.commit()
     finally:
       cursor.close()

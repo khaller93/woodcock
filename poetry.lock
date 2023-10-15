@@ -37,6 +37,35 @@ pycodestyle = ">=2.10.0"
 tomli = {version = "*", markers = "python_version < \"3.11\""}
 
 [[package]]
+name = "backports-zoneinfo"
+version = "0.2.1"
+description = "Backport of the standard library zoneinfo module"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "backports.zoneinfo-0.2.1-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:da6013fd84a690242c310d77ddb8441a559e9cb3d3d59ebac9aca1a57b2e18bc"},
+    {file = "backports.zoneinfo-0.2.1-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:89a48c0d158a3cc3f654da4c2de1ceba85263fafb861b98b59040a5086259722"},
+    {file = "backports.zoneinfo-0.2.1-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:1c5742112073a563c81f786e77514969acb58649bcdf6cdf0b4ed31a348d4546"},
+    {file = "backports.zoneinfo-0.2.1-cp36-cp36m-win32.whl", hash = "sha256:e8236383a20872c0cdf5a62b554b27538db7fa1bbec52429d8d106effbaeca08"},
+    {file = "backports.zoneinfo-0.2.1-cp36-cp36m-win_amd64.whl", hash = "sha256:8439c030a11780786a2002261569bdf362264f605dfa4d65090b64b05c9f79a7"},
+    {file = "backports.zoneinfo-0.2.1-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:f04e857b59d9d1ccc39ce2da1021d196e47234873820cbeaad210724b1ee28ac"},
+    {file = "backports.zoneinfo-0.2.1-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:17746bd546106fa389c51dbea67c8b7c8f0d14b5526a579ca6ccf5ed72c526cf"},
+    {file = "backports.zoneinfo-0.2.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:5c144945a7752ca544b4b78c8c41544cdfaf9786f25fe5ffb10e838e19a27570"},
+    {file = "backports.zoneinfo-0.2.1-cp37-cp37m-win32.whl", hash = "sha256:e55b384612d93be96506932a786bbcde5a2db7a9e6a4bb4bffe8b733f5b9036b"},
+    {file = "backports.zoneinfo-0.2.1-cp37-cp37m-win_amd64.whl", hash = "sha256:a76b38c52400b762e48131494ba26be363491ac4f9a04c1b7e92483d169f6582"},
+    {file = "backports.zoneinfo-0.2.1-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:8961c0f32cd0336fb8e8ead11a1f8cd99ec07145ec2931122faaac1c8f7fd987"},
+    {file = "backports.zoneinfo-0.2.1-cp38-cp38-manylinux1_i686.whl", hash = "sha256:e81b76cace8eda1fca50e345242ba977f9be6ae3945af8d46326d776b4cf78d1"},
+    {file = "backports.zoneinfo-0.2.1-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:7b0a64cda4145548fed9efc10322770f929b944ce5cee6c0dfe0c87bf4c0c8c9"},
+    {file = "backports.zoneinfo-0.2.1-cp38-cp38-win32.whl", hash = "sha256:1b13e654a55cd45672cb54ed12148cd33628f672548f373963b0bff67b217328"},
+    {file = "backports.zoneinfo-0.2.1-cp38-cp38-win_amd64.whl", hash = "sha256:4a0f800587060bf8880f954dbef70de6c11bbe59c673c3d818921f042f9954a6"},
+    {file = "backports.zoneinfo-0.2.1.tar.gz", hash = "sha256:fadbfe37f74051d024037f223b8e001611eac868b5c5b06144ef4d8b799862f2"},
+]
+
+[package.extras]
+tzdata = ["tzdata"]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
@@ -62,55 +91,6 @@ files = [
 
 [package.extras]
 graph = ["objgraph (>=1.7.2)"]
-
-[[package]]
-name = "duckdb"
-version = "0.9.0"
-description = "DuckDB embedded database"
-category = "main"
-optional = false
-python-versions = ">=3.7.0"
-files = [
-    {file = "duckdb-0.9.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:ffb28663810679c77c7a4d6e799a45991b13af413fc9e012e65221e48ef58a8d"},
-    {file = "duckdb-0.9.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:8770917c52007bd4873aa81a9fab13e015be45cabd2f32092e4cd04bbd043da7"},
-    {file = "duckdb-0.9.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:7d26ac0d59e1e1c9c0faaafa94487016abde4f431b45e3da7a4c37f2ffbcecae"},
-    {file = "duckdb-0.9.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5900a1580228e6631067b118f8b193dfd2464f2060b7807480ad9f3be4724304"},
-    {file = "duckdb-0.9.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:516f6d982cf28d8257dedf371c85d00523114f600018f4e013b01d2072f8f7b9"},
-    {file = "duckdb-0.9.0-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:c144c18da348af5201d9526556d3f3bddbf4882a71106a4ced9acca0ea579938"},
-    {file = "duckdb-0.9.0-cp310-cp310-win32.whl", hash = "sha256:ed4fff7a46a0fb3780bde1dc9ce07f2e2947f625e3f26d41771b5d54150f0a3f"},
-    {file = "duckdb-0.9.0-cp310-cp310-win_amd64.whl", hash = "sha256:577e4d5d356634ebd4a02a5e0a1c8e980d6e5dc032f958cc310f68686840745d"},
-    {file = "duckdb-0.9.0-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:b8900a9b2dc5eff4849025755801be156cfb16326ff8d0bc5f3787321f1553be"},
-    {file = "duckdb-0.9.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:f2bad2145350a81f32852e09f00cea43533cce2dd41e974792f60ce24ecdae30"},
-    {file = "duckdb-0.9.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:139c0af678dd7ca4a37c744db67a32dd65ee62424dcb09f4ac6c839115ec67a4"},
-    {file = "duckdb-0.9.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:acead7e2145e837cb220d6adf5c8a13bd08c8552ea924f9ee95483b379a2de41"},
-    {file = "duckdb-0.9.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:15dc13cac315741c7fa97907ed8b999b31c10fb3347a142d367c8ce0ed8be63e"},
-    {file = "duckdb-0.9.0-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:2d5d8b3e6cad93ab9ac92ce1a2db7ea4836cc2a310efc8e4d8d79648050e2804"},
-    {file = "duckdb-0.9.0-cp311-cp311-win32.whl", hash = "sha256:c3b677cade05bf99a225c164ca46384d0182e7d09b47998174df5b4711717a62"},
-    {file = "duckdb-0.9.0-cp311-cp311-win_amd64.whl", hash = "sha256:99ed27ef0f1bc8b4f64bed124331d474b0f3106de91fd086e00fa98c670df488"},
-    {file = "duckdb-0.9.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:1407e2e75c10cd9988bae7ad0450208223660bc821d56e06114d5cb8f5358580"},
-    {file = "duckdb-0.9.0-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2388e9dcc38c08efef8d74e5f63db691329dc9ed5c68b7a6619aae9678f10ebc"},
-    {file = "duckdb-0.9.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:347b7aa85aef8cfd0a53143aded0e121aed51cf74713b264ade22fedd3af2bd8"},
-    {file = "duckdb-0.9.0-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:e4636a4d14590719bf67c317b3df04ef3269f68829340457ce0c47e8eb759d39"},
-    {file = "duckdb-0.9.0-cp37-cp37m-win32.whl", hash = "sha256:745138da6645286e098dff3be55fbd64eba8d13ba3cfb823fb0d5c0e4d5f646c"},
-    {file = "duckdb-0.9.0-cp37-cp37m-win_amd64.whl", hash = "sha256:ac10228540cacbbb9483842d429212c7e61fc02bd94d07ab6eee69beb4e1f5d2"},
-    {file = "duckdb-0.9.0-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:0595110431d7f53663ed2b9d25ca393feefa3a096fbaf33af8f500d7d7a40bd9"},
-    {file = "duckdb-0.9.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:ab4a6bc961944ad8b23a477c322b9be5f3846ef52a6ff096a0076989a4a841a1"},
-    {file = "duckdb-0.9.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:cf33ea1a3882d83d744282e2b0db79fe274d64ebc2beff31e42d13f5d2093f22"},
-    {file = "duckdb-0.9.0-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0af5cf448bca9b5acb8a5d2a451739fc5545bca3b5222db73a8faade6ff499be"},
-    {file = "duckdb-0.9.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:424fd1e3dde074660865557f2138b2f988b9e499bc1eaaf391a1912d19e909dd"},
-    {file = "duckdb-0.9.0-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:72cfa8e1de0b29719fa81c7afe4bb0b3011cb4d9c5c2ecf18dce14912d6a4386"},
-    {file = "duckdb-0.9.0-cp38-cp38-win32.whl", hash = "sha256:36cb92ccf75d7c18d533ab959d5e9febf1d0977647eba8b85f54d60edd4ceafd"},
-    {file = "duckdb-0.9.0-cp38-cp38-win_amd64.whl", hash = "sha256:4134aad5ed0399d621180a2a09d96b7dd94b18c01682da14e41930ef16e50c78"},
-    {file = "duckdb-0.9.0-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:a0082b96c4141f87dc6440e76ef13e39f191a131534ffafadd6cf279766f1ecd"},
-    {file = "duckdb-0.9.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:e4302fb0be33cdbff9404656be0b45bba6e549a67180f03c262bfcb1e41288db"},
-    {file = "duckdb-0.9.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:a115a430c607a3287f4af26d18820a9eab56925703142b727bc3f7204b50aa3f"},
-    {file = "duckdb-0.9.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bbb6ff6b29e88b6f0c658de4c2fac5452c9748f5c6f376f0f74dc72c6aa26669"},
-    {file = "duckdb-0.9.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5615e7854f042f1c7a5c4c3959de64861677b63029b08ed72c94abffcdc70483"},
-    {file = "duckdb-0.9.0-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:8784986a04bac9873fa538775c1fb5b677baad90ddc9371f7b4a89468b1c1ab6"},
-    {file = "duckdb-0.9.0-cp39-cp39-win32.whl", hash = "sha256:584b1b63d74076c3dd4188582c2f59ac98177fe751e1fa34d75345e166e70d73"},
-    {file = "duckdb-0.9.0-cp39-cp39-win_amd64.whl", hash = "sha256:40814f12c4c1ec222c8df05763528dbbffd175c8bcc5e3c45c3950c6a9b3f209"},
-    {file = "duckdb-0.9.0.tar.gz", hash = "sha256:3a52c975cc13b965580cd00af1538b2d9f6b896431f97121dbee7ce715edcd2a"},
-]
 
 [[package]]
 name = "exceptiongroup"
@@ -260,15 +240,40 @@ dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
+name = "psycopg"
+version = "3.1.12"
+description = "PostgreSQL database adapter for Python"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "psycopg-3.1.12-py3-none-any.whl", hash = "sha256:8ec5230d6a7eb654b4fb3cf2d3eda8871d68f24807b934790504467f1deee9f8"},
+    {file = "psycopg-3.1.12.tar.gz", hash = "sha256:cec7ad2bc6a8510e56c45746c631cf9394148bdc8a9a11fd8cf8554ce129ae78"},
+]
+
+[package.dependencies]
+"backports.zoneinfo" = {version = ">=0.2.0", markers = "python_version < \"3.9\""}
+typing-extensions = ">=4.1"
+tzdata = {version = "*", markers = "sys_platform == \"win32\""}
+
+[package.extras]
+binary = ["psycopg-binary (==3.1.12)"]
+c = ["psycopg-c (==3.1.12)"]
+dev = ["black (>=23.1.0)", "dnspython (>=2.1)", "flake8 (>=4.0)", "mypy (>=1.4.1)", "types-setuptools (>=57.4)", "wheel (>=0.37)"]
+docs = ["Sphinx (>=5.0)", "furo (==2022.6.21)", "sphinx-autobuild (>=2021.3.14)", "sphinx-autodoc-typehints (>=1.12)"]
+pool = ["psycopg-pool"]
+test = ["anyio (>=3.6.2,<4.0)", "mypy (>=1.4.1)", "pproxy (>=2.7)", "pytest (>=6.2.5)", "pytest-cov (>=3.0)", "pytest-randomly (>=3.5)"]
+
+[[package]]
 name = "pycodestyle"
-version = "2.11.0"
+version = "2.11.1"
 description = "Python style guide checker"
 category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pycodestyle-2.11.0-py2.py3-none-any.whl", hash = "sha256:5d1013ba8dc7895b548be5afb05740ca82454fd899971563d2ef625d090326f8"},
-    {file = "pycodestyle-2.11.0.tar.gz", hash = "sha256:259bcc17857d8a8b3b4a2327324b79e5f020a13c16074670f9c8c8f872ea76d0"},
+    {file = "pycodestyle-2.11.1-py2.py3-none-any.whl", hash = "sha256:44fe31000b2d866f2e41841b18528a505fbd7fef9017b04eff4e2648a0fadc67"},
+    {file = "pycodestyle-2.11.1.tar.gz", hash = "sha256:41ba0e7afc9752dfb53ced5489e89f8186be00e599e712660695b7a75ff2663f"},
 ]
 
 [[package]]
@@ -370,12 +375,24 @@ files = [
 name = "typing-extensions"
 version = "4.8.0"
 description = "Backported and Experimental Type Hints for Python 3.8+"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
     {file = "typing_extensions-4.8.0-py3-none-any.whl", hash = "sha256:8f92fc8806f9a6b641eaa5318da32b44d401efaac0f6678c9bc448ba3605faa0"},
     {file = "typing_extensions-4.8.0.tar.gz", hash = "sha256:df8e4339e9cb77357558cbdbceca33c303714cf861d1eef15e1070055ae8b7ef"},
+]
+
+[[package]]
+name = "tzdata"
+version = "2023.3"
+description = "Provider of IANA time zone data"
+category = "main"
+optional = false
+python-versions = ">=2"
+files = [
+    {file = "tzdata-2023.3-py2.py3-none-any.whl", hash = "sha256:7e65763eef3120314099b6939b5546db7adce1e7d6f2e179e3df563c70511eda"},
+    {file = "tzdata-2023.3.tar.gz", hash = "sha256:11ef1e08e54acb0d4f95bdb1be05da659673de4acbd21bf9c69e94cc5e907a3a"},
 ]
 
 [[package]]
@@ -466,4 +483,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "5b1f0b5c8c946be4d95721c21e42f974d7bb45f5c6ad4ed97dec54af746dd9c2"
+content-hash = "982c3ca0cd8db040f9adfd9f227b455a5ad9274888db4a4da501990af4877bc7"

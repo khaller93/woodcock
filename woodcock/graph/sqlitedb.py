@@ -5,17 +5,39 @@ import tempfile
 
 from os import makedirs
 from os.path import join, exists
+from typing import Sequence, Mapping
 from woodcock.graph.graph import GraphIndex, GraphQueryEngine
 
 from woodcock.graph.sqldb import AbstractSQLDB, AbstractSQLDBIndex, \
-    AbstractSQLDBQueryEngine, SQLRead, SQLWrite
+    AbstractSQLDBQueryEngine, DatabaseDialect
 
 
-class _SQLite3graphEngine(AbstractSQLDBQueryEngine):
+class SQLiteDatabaseDialect(DatabaseDialect):
+  """Database dialect for SQLite 3."""
+
+  def primary_key_row(self, name: str):
+    return f'{name} INTEGER PRIMARY KEY AUTOINCREMENT'
+
+  def insert_ignore_command(self, statement_name: str,
+                            column_names: Sequence[str],
+                            value_types: Sequence[type]) -> str:
+
+    columns = ', '.join(column_names)
+    values = ', '.join('?' for _ in value_types)
+    return f'''
+  INSERT OR IGNORE INTO {statement_name} ({columns}) VALUES ({values});
+'''
+
+  def var_sub(self, query: str, variables: Mapping[str, type]) -> str:
+    variables = {k: '?' for k, _ in variables.items()}
+    return query % variables
+
+
+class _SQLite3GraphEngine(AbstractSQLDBQueryEngine):
 
   def __init__(self, db_file_path: str) -> None:
     self._db_file_path = db_file_path
-    super().__init__(SQLRead())
+    super().__init__(SQLiteDatabaseDialect())
 
   @property
   def _connection(self):
@@ -29,7 +51,7 @@ class _SQLite3Index(AbstractSQLDBIndex):
 
   def __init__(self, db_file_path: str) -> None:
     self._db_file_path = db_file_path
-    super().__init__(SQLRead())
+    super().__init__(SQLiteDatabaseDialect())
 
   @property
   def _connection(self):
@@ -53,7 +75,7 @@ class SQLite3Graph(AbstractSQLDB):
     if not exists(self._db_dir_path):
       makedirs(self._db_dir_path)
     self._db_file_path = join(self._db_dir_path, 'sqlite.db')
-    super().__init__(SQLWrite(), SQLRead())
+    super().__init__(SQLiteDatabaseDialect())
 
   @property
   def _connection(self):
@@ -65,4 +87,4 @@ class SQLite3Graph(AbstractSQLDB):
     return _SQLite3Index(self._db_file_path)
 
   def query_engine(self) -> GraphQueryEngine[int, int]:
-    return _SQLite3graphEngine(self._db_file_path)
+    return _SQLite3GraphEngine(self._db_file_path)

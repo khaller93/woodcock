@@ -150,9 +150,9 @@ class SQLReadCommands:
 ''', {'id': int})
     query['get_edges_search'] = dialect.var_sub('''
   SELECT subj, pred, obj FROM statement
-    WHERE (%(id)s IS NULL OR subj = %(id)s)
-      AND (%(id)s IS NULL OR pred = %(id)s)
-      AND (%(id)s IS NULL OR obj = %(id)s);
+    WHERE (cast(%(id)s as int) IS NULL OR subj = %(id)s)
+      AND (cast(%(id)s as int) IS NULL OR pred = %(id)s)
+      AND (cast(%(id)s as int) IS NULL OR obj = %(id)s);
 ''', {'id': int})
     return query
 

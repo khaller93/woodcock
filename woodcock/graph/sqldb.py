@@ -154,6 +154,7 @@ class SQLReadCommands:
       AND (cast(%(id)s as int) IS NULL OR pred = %(id)s)
       AND (cast(%(id)s as int) IS NULL OR obj = %(id)s);
 ''', {'id': int})
+    query['get_all_edges'] = 'SELECT subj, pred, obj FROM statement;'
     return query
 
   def __getattr__(self, name):
@@ -161,10 +162,6 @@ class SQLReadCommands:
     if val is None:
       raise AttributeError(f'{name} couldn\'t be found')
     return val
-
-  @property
-  def get_all_edges(self) -> str:
-    return '''SELECT subj, pred, obj FROM statement;'''
 
 
 class SQLCommands:

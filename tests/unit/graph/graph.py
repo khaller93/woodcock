@@ -344,6 +344,11 @@ class GraphQueryTesting(GraphTesting):
     edge_list = [e for e in edges]
     assert sorted(edge_list) == sorted(all_edges(index))
 
+  def test_edges_count_must_return_total_count_when_graph_with_no_filter(self):
+    engine = self.create_data_db().query_engine()
+    cnt = engine.edges_count()
+    assert cnt == len(test_data)
+
   def test_edges_must_return_edges_for_eevee_when_graph_with_subj_filter(self):
     engine = self.create_data_db().query_engine()
     index = self.create_data_db().index()
@@ -351,6 +356,12 @@ class GraphQueryTesting(GraphTesting):
     assert edges is not None
     edge_list = [e for e in edges]
     assert sorted(edge_list) == sorted(all_edges(index, subj='pokemon/eevee'))
+
+  def test_edges_count_must_return_jiggy_out_count_when_subj_filter(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    cnt = engine.edges_count(subj_node=index.node_id_for('pokemon/jigglypuff'))
+    assert cnt == len(all_edges(index, subj='pokemon/jigglypuff'))
 
   def test_edges_must_return_edges_normal_type_when_graph_with_obj_filter(self):
     engine = self.create_data_db().query_engine()
@@ -360,6 +371,12 @@ class GraphQueryTesting(GraphTesting):
     edge_list = [e for e in edges]
     assert sorted(edge_list) == sorted(all_edges(index, obj='PokéType:Normal'))
 
+  def test_edges_count_must_return_normal_type_in_count_when_obj_filter(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    cnt = engine.edges_count(obj_node=index.node_id_for('PokéType:Normal'))
+    assert cnt == len(all_edges(index, obj='PokéType:Normal'))
+
   def test_edges_must_return_edges_ability_when_graph_with_pred_filter(self):
     engine = self.create_data_db().query_engine()
     index = self.create_data_db().index()
@@ -367,6 +384,12 @@ class GraphQueryTesting(GraphTesting):
     assert edges is not None
     edge_list = [e for e in edges]
     assert sorted(edge_list) == sorted(all_edges(index, pred='isAbleToApply'))
+
+  def test_edges_count_must_return_ability_edges_count_when_pred_filter(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    cnt = engine.edges_count(prop_type=index.property_id_for('isAbleToApply'))
+    assert cnt == len(all_edges(index, pred='isAbleToApply'))
 
   def test_edges_must_return_edges_eevee_shape_when_multi_filter(self):
     engine = self.create_data_db().query_engine()
@@ -377,3 +400,17 @@ class GraphQueryTesting(GraphTesting):
     edge_list = [e for e in edges]
     assert sorted(edge_list) == sorted(all_edges(index, pred='hasShape',
                                                  subj='pokemon/eevee'))
+
+  def test_edges_must_return_empty_list_when_subj_and_obj_not_linked(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    edges = engine.edges(subj_node=index.node_id_for('pokemon/eevee'),
+                         obj_node=index.node_id_for('pokemon/jigglypuff'))
+    assert not list(edges)
+
+  def test_edges_count_must_return_zero_when_subj_and_obj_not_linked(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    cnt = engine.edges_count(subj_node=index.node_id_for('pokemon/eevee'),
+                             obj_node=index.node_id_for('pokemon/jigglypuff'))
+    assert cnt == 0

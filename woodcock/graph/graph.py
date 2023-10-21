@@ -166,6 +166,27 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
     """
     raise NotImplementedError()
 
+  def edges_count(self, *, subj_node: Union[NodeID, None] = None,
+                  prop_type: Union[PropertyID, None] = None,
+                  obj_node: Union[NodeID, None] = None) -> int:
+    """Counts the edges that match the given filter.
+
+    Args:
+        subj_node (Union[NodeID, None], optional): ID of the node on the subject
+        position or `None`, if no filter shall be applied on the subject.
+        Defaults to None.
+        prop_type (Union[PropertyID, None], optional): ID of the property
+        type or `None`, if no filter shall be applied on the property type.
+        Defaults to None.
+        obj_node (Union[NodeID, None], optional): ID of the node on the object
+        position or `None`, if no filter shall be applied on the object.
+        Defaults to None.
+
+    Returns:
+        int: The number of edges that match the filter.
+    """
+    raise NotImplementedError()
+
   def shutdown(self) -> None:
     """Shut the graph index down, and free up all resources."""
     pass

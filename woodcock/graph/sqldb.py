@@ -155,6 +155,13 @@ class SQLReadCommands:
       AND (cast(%(id)s as int) IS NULL OR obj = %(id)s);
 ''', {'id': int})
     query['get_all_edges'] = 'SELECT subj, pred, obj FROM statement;'
+    query['get_edges_search_count'] = dialect.var_sub('''
+  SELECT count(*) FROM statement
+    WHERE (cast(%(id)s as int) IS NULL OR subj = %(id)s)
+      AND (cast(%(id)s as int) IS NULL OR pred = %(id)s)
+      AND (cast(%(id)s as int) IS NULL OR obj = %(id)s);
+''', {'id': int})
+    query['get_all_edges_count'] = 'SELECT count(*) FROM statement;'
     return query
 
   def __getattr__(self, name):
@@ -309,14 +316,30 @@ class AbstractSQLDBQueryEngine(GraphQueryEngine[int, int]):
         cursor.execute(self._q.read.get_all_edges)
       else:
         cursor.execute(self._q.read.get_edges_search,
-                       [subj_node, subj_node,
+                       (subj_node, subj_node,
                         prop_type, prop_type,
-                        obj_node, obj_node])
+                        obj_node, obj_node))
       while True:
         r = cursor.fetchone()
         if r is None:
           break
         yield r[0], r[1], r[2]
+    finally:
+      cursor.close()
+
+  def edges_count(self, *, subj_node: Union[int, None] = None,
+                  prop_type: Union[int, None] = None,
+                  obj_node: Union[int, None] = None) -> int:
+    cursor = self._connection.cursor()
+    try:
+      if subj_node is None and prop_type is None and obj_node is None:
+        cursor.execute(self._q.read.get_all_edges_count)
+      else:
+        cursor.execute(self._q.read.get_edges_search_count,
+                       (subj_node, subj_node,
+                        prop_type, prop_type,
+                        obj_node, obj_node))
+      return cursor.fetchone()[0]
     finally:
       cursor.close()
 

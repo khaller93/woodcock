@@ -21,7 +21,11 @@ class Reader(Generic[Word]):
         Sentence: the next sentence from the corpus, or `None`, if the end of
         the corpus has been reached.
     """
-    raise NotImplementedError('must be implemented')
+    raise NotImplementedError()
+
+  def close(self) -> None:
+    """Closes the reader."""
+    pass
 
 
 class Writer(Generic[Word]):
@@ -38,11 +42,11 @@ class Writer(Generic[Word]):
         sentence (Sentence): the list of words to write to the corpus. It must
         not be `None`.
     """
-    raise NotImplementedError('must be implemented')
+    raise NotImplementedError()
 
   def close(self) -> None:
     """Flush and close the writer."""
-    raise NotImplementedError('must be implemented')
+    pass
 
 
 _word_byte_size = 5

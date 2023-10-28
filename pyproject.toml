@@ -8,6 +8,7 @@ readme = "README.rst"
 [tool.poetry.dependencies]
 psycopg = "^3.1"
 python = "^3.8"
+lz4 = "^4.3" 
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0"

@@ -40,14 +40,16 @@ class DatabaseDialect:
     raise NotImplementedError()
 
   def var_sub(self, query: str, variables: Mapping[str, type]) -> str:
-    """_summary_
+    """Substitute the variables in the given query string, if they are specified
+    in given variables map.
 
     Args:
-        query (str): _description_
-        variables (Mapping[str, type]): _description_
+        query (str): the query string that shall be substituted.
+        variables (Mapping[str, type]): a map of variable name and the data type
+        of the variable.
 
     Returns:
-        str: _description_
+        str: the query string substituted with the given variables.
     """
     raise NotImplementedError()
 

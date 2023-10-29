@@ -414,3 +414,17 @@ class GraphQueryTesting(GraphTesting):
     cnt = engine.edges_count(subj_node=index.node_id_for('pokemon/eevee'),
                              obj_node=index.node_id_for('pokemon/jigglypuff'))
     assert cnt == 0
+
+  def test_edges_sample_must_return_empty_list_when_size_is_zero(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    sample = engine.edges_sample(size=0,
+                                 subj_node=index.node_id_for('pokemon/eevee'))
+    assert sample == []
+
+  def test_edges_sample_must_rais_value_error_when_size_is_negative(self):
+    engine = self.create_data_db().query_engine()
+    index = self.create_data_db().index()
+    with raises(ValueError):
+      engine.edges_sample(size=-1,
+                          subj_node=index.node_id_for('pokemon/eevee'))

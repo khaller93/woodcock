@@ -1,9 +1,9 @@
 [tool.poetry]
 name = "woodcock"
 version = "0.1.0"
-description = "A scalable implementation of RDF2Vec"
+description = "A scalable implementation for generating corpora from KGs"
 authors = ["Kevin Haller <contact@kevinhaller.dev>"]
-readme = "README.rst"
+readme = "README.md"
 
 [tool.poetry.dependencies]
 psycopg = "^3.1"

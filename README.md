@@ -1,4 +1,9 @@
-# Woodcock - KG Corpora Generation
+<div style="text-align: center;">
+  <h1>
+    Woodcock <br/>
+    <span style="font-size: 0.8em">Knowledge Graph Corpora Generation</span>
+  </h1>
+</div>
 
 ![American Woodcock in a labyrinth pixel art (DALL-E)](docs/graphics/woodcock.png)
 

@@ -9,7 +9,7 @@ The query interface is limited as the generation of corpora doesn't necessitate
 anything more extensive.
 """
 
-from typing import Tuple, Iterable, Generic, Generator, Union
+from typing import Tuple, Iterable, Generic, Generator, Optional
 from woodcock.graph.typing import NodeID, PropertyID, Edge, NodeLabel, \
     PropertyLabel
 
@@ -139,21 +139,21 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
     """
     raise NotImplementedError()
 
-  def edges(self, *, subj_node: Union[NodeID, None] = None,
-            prop_type: Union[PropertyID, None] = None,
-            obj_node: Union[NodeID, None] = None) \
+  def edges(self, *, subj_node: Optional[NodeID] = None,
+            prop_type: Optional[PropertyID] = None,
+            obj_node: Optional[NodeID] = None) \
           -> Generator[Edge, None, None]:
     """Gets all the edges that match the given filter.
 
     Args:
-        subj_node (Union[NodeID, None], optional): ID of the node on the subject
-        position or `None`, if no filter shall be applied on the subject.
+        subj_node (NodeID, optional): ID of the node on the subject position or
+        `None`, if no filter shall be applied on the subject.
         Defaults to None.
-        prop_type (Union[PropertyID, None], optional): ID of the property
-        type or `None`, if no filter shall be applied on the property type.
+        prop_type (PropertyID, optional): ID of the property type or `None`, if
+        no filter shall be applied on the property type.
         Defaults to None.
-        obj_node (Union[NodeID, None], optional): ID of the node on the object
-        position or `None`, if no filter shall be applied on the object.
+        obj_node (NodeID, optional): ID of the node on the object position or
+        `None`, if no filter shall be applied on the object.
         Defaults to None.
 
     Raises:
@@ -166,20 +166,20 @@ class GraphQueryEngine(Generic[NodeID, PropertyID]):
     """
     raise NotImplementedError()
 
-  def edges_count(self, *, subj_node: Union[NodeID, None] = None,
-                  prop_type: Union[PropertyID, None] = None,
-                  obj_node: Union[NodeID, None] = None) -> int:
+  def edges_count(self, *, subj_node: Optional[NodeID] = None,
+                  prop_type: Optional[PropertyID] = None,
+                  obj_node: Optional[NodeID] = None) -> int:
     """Counts the edges that match the given filter.
 
     Args:
-        subj_node (Union[NodeID, None], optional): ID of the node on the subject
-        position or `None`, if no filter shall be applied on the subject.
+        subj_node (NodeID, optional): ID of the node on the subject position or
+        `None`, if no filter shall be applied on the subject.
         Defaults to None.
-        prop_type (Union[PropertyID, None], optional): ID of the property
-        type or `None`, if no filter shall be applied on the property type.
+        prop_type (PropertyID, optional): ID of the property type or `None`, if
+        no filter shall be applied on the property type.
         Defaults to None.
-        obj_node (Union[NodeID, None], optional): ID of the node on the object
-        position or `None`, if no filter shall be applied on the object.
+        obj_node (NodeID, optional): ID of the node on the object position or
+        `None`, if no filter shall be applied on the object.
         Defaults to None.
 
     Returns:

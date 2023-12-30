@@ -2,7 +2,7 @@
 database."""
 
 from functools import lru_cache
-from typing import Iterable, Tuple, Generator, Union, Sequence, Mapping
+from typing import Iterable, Tuple, Generator, Sequence, Mapping, Optional
 
 from woodcock.graph.graph import EmbeddedGraph, GraphIndex, GraphQueryEngine
 
@@ -308,9 +308,9 @@ class AbstractSQLDBQueryEngine(GraphQueryEngine[int, int]):
       cursor.close()
 
   def edges(self, *,
-            subj_node: Union[int, None] = None,
-            prop_type: Union[int, None] = None,
-            obj_node: Union[int, None] = None) \
+            subj_node: Optional[int] = None,
+            prop_type: Optional[int] = None,
+            obj_node: Optional[int] = None) \
           -> Generator[Tuple[int, int, int], None, None]:
     cursor = self._connection.cursor()
     try:
@@ -329,9 +329,9 @@ class AbstractSQLDBQueryEngine(GraphQueryEngine[int, int]):
     finally:
       cursor.close()
 
-  def edges_count(self, *, subj_node: Union[int, None] = None,
-                  prop_type: Union[int, None] = None,
-                  obj_node: Union[int, None] = None) -> int:
+  def edges_count(self, *, subj_node: Optional[int] = None,
+                  prop_type: Optional[int] = None,
+                  obj_node: Optional[int] = None) -> int:
     cursor = self._connection.cursor()
     try:
       if subj_node is None and prop_type is None and obj_node is None:

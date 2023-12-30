@@ -1,4 +1,12 @@
-# Woodcock - Knowledge Graph Corpora Generation
+<p align="center">
+  <h1 align="center">
+    Woodcock
+    <br/>
+    <span style="font-size:0.75em;">Knowledge Graph Corpora Generation</span>
+    <br/>
+    <a href="https://github.com/khaller93/woodcock/blob/main/LICENSE" ><img alt="license" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square" /></a>
+  </h1>
+</p>
 
 ![American Woodcock in a labyrinth pixel art (DALL-E)](docs/graphics/woodcock.png)
 

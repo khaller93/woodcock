@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "A scalable implementation for generating corpora from KGs"
 authors = ["Kevin Haller <contact@kevinhaller.dev>"]
 readme = "README.md"
+license = "Apache-2.0"
 
 [tool.poetry.dependencies]
 psycopg = "^3.1"
